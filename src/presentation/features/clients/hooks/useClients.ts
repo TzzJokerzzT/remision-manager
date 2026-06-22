@@ -6,10 +6,10 @@ import type {
 } from '@/src/core/domain/repositories/IClientRepository';
 import { queryKeys } from '@/src/shared/constants/queryKeys';
 
-export function useClients(companyId?: string) {
+export function useClients(companyId?: string, search?: string) {
   return useQuery({
-    queryKey: queryKeys.clients.all(companyId),
-    queryFn: () => clientUseCases.list(companyId),
+    queryKey: queryKeys.clients.all(companyId, search),
+    queryFn: () => clientUseCases.list(companyId, search),
   });
 }
 

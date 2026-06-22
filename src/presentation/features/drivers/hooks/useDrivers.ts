@@ -6,10 +6,10 @@ import type {
 } from '@/src/core/domain/repositories/IDriverRepository';
 import { queryKeys } from '@/src/shared/constants/queryKeys';
 
-export function useDrivers(companyId?: string) {
+export function useDrivers(companyId?: string, search?: string) {
   return useQuery({
-    queryKey: queryKeys.drivers.all(companyId),
-    queryFn: () => driverUseCases.list(companyId),
+    queryKey: queryKeys.drivers.all(companyId, search),
+    queryFn: () => driverUseCases.list(companyId, search),
   });
 }
 

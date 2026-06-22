@@ -1,13 +1,14 @@
 'use client';
 
 import { Button, useOverlayState } from '@heroui/react';
-import { Building2, Plus } from 'lucide-react';
+import { Building2, Plus, Search as SearchIcon } from 'lucide-react';
 import { useState } from 'react';
 import type { CompanyFormValues } from '@/src/core/application/dtos/company.dto';
 import type { Company } from '@/src/core/domain/entities/Company';
 import { AnimatedList } from '@/src/presentation/components/shared/AnimatedList';
 import { EmptyState } from '@/src/presentation/components/shared/EmptyState';
 import { PageHeader } from '@/src/presentation/components/shared/PageHeader';
+import { SearchInput } from '@/src/presentation/components/shared/SearchInput';
 import { Spinner } from '@/src/presentation/components/shared/Spinner';
 import { ConfirmDialog } from '@/src/presentation/components/ui/ConfirmDialog';
 import { FormModal } from '@/src/presentation/components/ui/FormModal';
@@ -16,7 +17,9 @@ import { CompanyCard } from './CompanyCard';
 import { CompanyForm } from './CompanyForm';
 
 export function CompanyManager() {
-  const { data: companies, isLoading } = useCompanies();
+  const [search, setSearch] = useState('');
+  const [appliedSearch, setAppliedSearch] = useState('');
+  const { data: companies, isLoading } = useCompanies(appliedSearch || undefined);
   const createMutation = useCreateCompany();
   const updateMutation = useUpdateCompany();
   const deleteMutation = useDeleteCompany();
@@ -62,6 +65,12 @@ export function CompanyManager() {
     deleteMutation.mutate(companyToDelete.id, { onSuccess: () => confirmModal.close() });
   };
 
+  const handleSearchSubmit = () => setAppliedSearch(search.trim());
+  const handleSearchClear = () => {
+    setSearch('');
+    setAppliedSearch('');
+  };
+
   const activeMutation = editingCompany ? updateMutation : createMutation;
 
   return (
@@ -74,6 +83,14 @@ export function CompanyManager() {
             <Plus className="mr-1.5 h-4 w-4" /> Nueva empresa
           </Button>
         }
+      />
+
+      <SearchInput
+        value={search}
+        onChange={setSearch}
+        onSubmit={handleSearchSubmit}
+        onClear={handleSearchClear}
+        placeholder="Buscar empresas..."
       />
 
       {isLoading ? (
@@ -91,6 +108,17 @@ export function CompanyManager() {
             />
           ))}
         </AnimatedList>
+      ) : appliedSearch ? (
+        <EmptyState
+          icon={SearchIcon}
+          title="Sin resultados"
+          description={`No se encontraron empresas que coincidan con "${appliedSearch}".`}
+          action={
+            <Button onPress={handleSearchClear} variant="outline" className="mt-2">
+              Limpiar busqueda
+            </Button>
+          }
+        />
       ) : (
         <EmptyState
           icon={Building2}

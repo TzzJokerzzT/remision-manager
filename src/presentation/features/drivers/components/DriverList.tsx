@@ -1,13 +1,14 @@
 'use client';
 
 import { Button, useOverlayState } from '@heroui/react';
-import { Plus, Truck } from 'lucide-react';
+import { Plus, Search as SearchIcon, Truck } from 'lucide-react';
 import { useState } from 'react';
 import type { DriverFormValues } from '@/src/core/application/dtos/driver.dto';
 import type { Driver } from '@/src/core/domain/entities/Driver';
 import { AnimatedList } from '@/src/presentation/components/shared/AnimatedList';
 import { EmptyState } from '@/src/presentation/components/shared/EmptyState';
 import { PageHeader } from '@/src/presentation/components/shared/PageHeader';
+import { SearchInput } from '@/src/presentation/components/shared/SearchInput';
 import { Spinner } from '@/src/presentation/components/shared/Spinner';
 import { ConfirmDialog } from '@/src/presentation/components/ui/ConfirmDialog';
 import { FormModal } from '@/src/presentation/components/ui/FormModal';
@@ -29,7 +30,9 @@ function cleanPayload(values: DriverFormValues) {
 
 export function DriverList() {
   const { selectedCompany } = useCompanyStore();
-  const { data: drivers, isLoading } = useDrivers(selectedCompany?.id);
+  const [search, setSearch] = useState('');
+  const [appliedSearch, setAppliedSearch] = useState('');
+  const { data: drivers, isLoading } = useDrivers(selectedCompany?.id, appliedSearch || undefined);
   const createMutation = useCreateDriver();
   const updateMutation = useUpdateDriver();
   const deleteMutation = useDeleteDriver();
@@ -72,6 +75,12 @@ export function DriverList() {
     deleteMutation.mutate(deletingDriver.id, { onSuccess: () => confirmState.close() });
   };
 
+  const handleSearchSubmit = () => setAppliedSearch(search.trim());
+  const handleSearchClear = () => {
+    setSearch('');
+    setAppliedSearch('');
+  };
+
   return (
     <div className="flex flex-col gap-6">
       <PageHeader
@@ -86,6 +95,14 @@ export function DriverList() {
             <Plus className="h-4 w-4" /> Nuevo conductor
           </Button>
         }
+      />
+
+      <SearchInput
+        value={search}
+        onChange={setSearch}
+        onSubmit={handleSearchSubmit}
+        onClear={handleSearchClear}
+        placeholder="Buscar conductores..."
       />
 
       {isLoading ? (
@@ -103,6 +120,17 @@ export function DriverList() {
             />
           ))}
         </AnimatedList>
+      ) : appliedSearch ? (
+        <EmptyState
+          icon={SearchIcon}
+          title="Sin resultados"
+          description={`No se encontraron conductores que coincidan con "${appliedSearch}".`}
+          action={
+            <Button onPress={handleSearchClear} variant="outline" className="mt-2 gap-2">
+              Limpiar busqueda
+            </Button>
+          }
+        />
       ) : (
         <EmptyState
           icon={Truck}

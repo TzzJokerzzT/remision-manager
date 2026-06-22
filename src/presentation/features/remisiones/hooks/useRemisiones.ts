@@ -6,10 +6,10 @@ import type {
 } from '@/src/core/domain/repositories/IRemisionRepository';
 import { queryKeys } from '@/src/shared/constants/queryKeys';
 
-export function useRemisiones(companyId?: string) {
+export function useRemisiones(companyId?: string, search?: string) {
   return useQuery({
-    queryKey: queryKeys.remisiones.all(companyId),
-    queryFn: () => remisionUseCases.list(companyId),
+    queryKey: queryKeys.remisiones.all(companyId, search),
+    queryFn: () => remisionUseCases.list(companyId, search),
     enabled: !!companyId,
   });
 }

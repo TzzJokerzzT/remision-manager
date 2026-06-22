@@ -1,13 +1,14 @@
 'use client';
 
 import { Button, useOverlayState } from '@heroui/react';
-import { FileText, Plus } from 'lucide-react';
+import { FileText, Plus, Search as SearchIcon } from 'lucide-react';
 import { useState } from 'react';
 import type { RemisionFormValues } from '@/src/core/application/dtos/remision.dto';
 import type { Remision } from '@/src/core/domain/entities/Remision';
 import { AnimatedList } from '@/src/presentation/components/shared/AnimatedList';
 import { EmptyState } from '@/src/presentation/components/shared/EmptyState';
 import { PageHeader } from '@/src/presentation/components/shared/PageHeader';
+import { SearchInput } from '@/src/presentation/components/shared/SearchInput';
 import { Spinner } from '@/src/presentation/components/shared/Spinner';
 import { ConfirmDialog } from '@/src/presentation/components/ui/ConfirmDialog';
 import { FormModal } from '@/src/presentation/components/ui/FormModal';
@@ -41,7 +42,9 @@ function cleanPayload(values: RemisionFormValues) {
 
 export function RemisionList() {
   const { selectedCompany } = useCompanyStore();
-  const { data: remisiones, isLoading } = useRemisiones(selectedCompany?.id);
+  const [search, setSearch] = useState('');
+  const [appliedSearch, setAppliedSearch] = useState('');
+  const { data: remisiones, isLoading } = useRemisiones(selectedCompany?.id, appliedSearch || undefined);
   const { data: clients } = useClients(selectedCompany?.id);
   const { data: drivers } = useDrivers(selectedCompany?.id);
 
@@ -87,6 +90,12 @@ export function RemisionList() {
     deleteMutation.mutate(deletingRemision.id, { onSuccess: () => confirmState.close() });
   };
 
+  const handleSearchSubmit = () => setAppliedSearch(search.trim());
+  const handleSearchClear = () => {
+    setSearch('');
+    setAppliedSearch('');
+  };
+
   const clientsById = new Map((clients ?? []).map((c) => [c.id, c]));
   const driversById = new Map((drivers ?? []).map((d) => [d.id, d]));
 
@@ -115,6 +124,14 @@ export function RemisionList() {
         }
       />
 
+      <SearchInput
+        value={search}
+        onChange={setSearch}
+        onSubmit={handleSearchSubmit}
+        onClear={handleSearchClear}
+        placeholder="Buscar remisiones..."
+      />
+
       {isLoading ? (
         <div className="flex justify-center py-16">
           <Spinner />
@@ -132,6 +149,17 @@ export function RemisionList() {
             />
           ))}
         </AnimatedList>
+      ) : appliedSearch ? (
+        <EmptyState
+          icon={SearchIcon}
+          title="Sin resultados"
+          description={`No se encontraron remisiones que coincidan con "${appliedSearch}".`}
+          action={
+            <Button onPress={handleSearchClear} variant="outline" className="mt-2 gap-2">
+              Limpiar busqueda
+            </Button>
+          }
+        />
       ) : (
         <EmptyState
           icon={FileText}

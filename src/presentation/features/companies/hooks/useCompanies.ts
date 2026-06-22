@@ -7,10 +7,10 @@ import type {
 import { useCompanyStore } from '@/src/presentation/stores/company.store';
 import { queryKeys } from '@/src/shared/constants/queryKeys';
 
-export function useCompanies() {
+export function useCompanies(search?: string) {
   return useQuery({
-    queryKey: queryKeys.companies.all,
-    queryFn: () => companyUseCases.list(),
+    queryKey: queryKeys.companies.all(search),
+    queryFn: () => companyUseCases.list(search),
   });
 }
 
@@ -19,7 +19,7 @@ export function useCreateCompany() {
   return useMutation({
     mutationFn: (payload: CreateCompanyPayload) => companyUseCases.create(payload),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.companies.all });
+      queryClient.invalidateQueries({ queryKey: ['companies'] });
     },
   });
 }
@@ -30,7 +30,7 @@ export function useUpdateCompany() {
     mutationFn: ({ id, payload }: { id: string; payload: UpdateCompanyPayload }) =>
       companyUseCases.update(id, payload),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.companies.all });
+      queryClient.invalidateQueries({ queryKey: ['companies'] });
     },
   });
 }
@@ -42,7 +42,7 @@ export function useDeleteCompany() {
   return useMutation({
     mutationFn: (id: string) => companyUseCases.delete(id),
     onSuccess: (_data, deletedId) => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.companies.all });
+      queryClient.invalidateQueries({ queryKey: ['companies'] });
       if (selectedCompany?.id === deletedId) {
         setSelectedCompany(null);
       }
