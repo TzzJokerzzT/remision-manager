@@ -12,7 +12,7 @@ export interface CreateCompanyPayload {
 export type UpdateCompanyPayload = Partial<CreateCompanyPayload>;
 
 export interface ICompanyRepository {
-  list(): Promise<Company[]>;
+  list(search?: string): Promise<Company[]>;
   getById(id: string): Promise<Company>;
   create(payload: CreateCompanyPayload): Promise<Company>;
   update(id: string, payload: UpdateCompanyPayload): Promise<Company>;

@@ -19,7 +19,7 @@ export interface UpdateRemisionPayload {
 }
 
 export interface IRemisionRepository {
-  list(companyId?: string): Promise<Remision[]>;
+  list(companyId?: string, search?: string): Promise<Remision[]>;
   getById(id: string): Promise<Remision>;
   create(payload: CreateRemisionPayload): Promise<Remision>;
   update(id: string, payload: UpdateRemisionPayload): Promise<Remision>;

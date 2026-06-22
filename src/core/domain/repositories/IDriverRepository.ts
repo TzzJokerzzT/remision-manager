@@ -12,7 +12,7 @@ export interface CreateDriverPayload {
 export type UpdateDriverPayload = Partial<Omit<CreateDriverPayload, 'companyId'>>;
 
 export interface IDriverRepository {
-  list(companyId?: string): Promise<Driver[]>;
+  list(companyId?: string, search?: string): Promise<Driver[]>;
   getById(id: string): Promise<Driver>;
   create(payload: CreateDriverPayload): Promise<Driver>;
   update(id: string, payload: UpdateDriverPayload): Promise<Driver>;

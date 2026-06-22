@@ -12,7 +12,7 @@ export interface CreateClientPayload {
 export type UpdateClientPayload = Partial<Omit<CreateClientPayload, 'companyId'>>;
 
 export interface IClientRepository {
-  list(companyId?: string): Promise<Client[]>;
+  list(companyId?: string, search?: string): Promise<Client[]>;
   getById(id: string): Promise<Client>;
   create(payload: CreateClientPayload): Promise<Client>;
   update(id: string, payload: UpdateClientPayload): Promise<Client>;
