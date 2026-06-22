@@ -3,19 +3,19 @@ export const queryKeys = {
     me: ['auth', 'me'] as const,
   },
   companies: {
-    all: ['companies'] as const,
+    all: (search?: string) => ['companies', search ?? ''] as const,
     detail: (id: string) => ['companies', id] as const,
   },
   clients: {
-    all: (companyId?: string) => ['clients', companyId ?? 'all'] as const,
+    all: (companyId?: string, search?: string) => ['clients', companyId ?? 'all', search ?? ''] as const,
     detail: (id: string) => ['clients', 'detail', id] as const,
   },
   drivers: {
-    all: (companyId?: string) => ['drivers', companyId ?? 'all'] as const,
+    all: (companyId?: string, search?: string) => ['drivers', companyId ?? 'all', search ?? ''] as const,
     detail: (id: string) => ['drivers', 'detail', id] as const,
   },
   remisiones: {
-    all: (companyId?: string) => ['remisiones', companyId ?? 'all'] as const,
+    all: (companyId?: string, search?: string) => ['remisiones', companyId ?? 'all', search ?? ''] as const,
     detail: (id: string) => ['remisiones', 'detail', id] as const,
   },
 } as const;
