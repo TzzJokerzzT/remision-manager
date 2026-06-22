@@ -18,6 +18,7 @@ interface AppSelectProps {
   errorMessage?: string;
   isDisabled?: boolean;
   fullWidth?: boolean;
+  className?: string;
 }
 
 export function AppSelect({
@@ -30,6 +31,7 @@ export function AppSelect({
   errorMessage,
   isDisabled,
   fullWidth = true,
+  className,
 }: AppSelectProps) {
   return (
     <div className="flex flex-col gap-1.5">
@@ -41,6 +43,7 @@ export function AppSelect({
         onSelectionChange={(key) => onSelectionChange(key as string | null)}
         isDisabled={isDisabled}
         placeholder={placeholder}
+        className={className}
       >
         <Select.Trigger
           className={`flex items-center justify-between rounded-lg border px-3 py-2 text-sm transition-colors ${
