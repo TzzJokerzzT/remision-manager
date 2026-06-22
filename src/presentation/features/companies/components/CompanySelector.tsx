@@ -20,7 +20,7 @@ export function CompanySelector() {
   const options = (companies ?? []).map((c) => ({ id: c.id, label: c.name }));
 
   return (
-    <div className="flex min-w-[200px] items-center gap-2">
+    <div className="flex min-w-50 items-center gap-2">
       <Building2 className="h-4 w-4 shrink-0 text-foreground/40" />
       <AppSelect
         placeholder={isLoading ? 'Cargando...' : 'Selecciona empresa'}
@@ -32,6 +32,7 @@ export function CompanySelector() {
         }}
         isDisabled={isLoading || options.length === 0}
         fullWidth
+        className="w-57.5"
       />
     </div>
   );
