@@ -7,8 +7,11 @@ import type {
 import { httpClient } from '../http/httpClient';
 
 export class RemisionRepository implements IRemisionRepository {
-  async list(companyId?: string) {
-    const { data } = await httpClient.get('/remisiones', { params: companyId ? { companyId } : undefined });
+  async list(companyId?: string, search?: string) {
+    const params: Record<string, string> = {};
+    if (companyId) params.companyId = companyId;
+    if (search?.trim()) params.search = search.trim();
+    const { data } = await httpClient.get('/remisiones', { params });
     return data.data as Remision[];
   }
 

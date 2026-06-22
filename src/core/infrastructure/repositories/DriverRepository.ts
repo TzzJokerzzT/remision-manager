@@ -7,8 +7,11 @@ import type {
 import { httpClient } from '../http/httpClient';
 
 export class DriverRepository implements IDriverRepository {
-  async list(companyId?: string) {
-    const { data } = await httpClient.get('/drivers', { params: companyId ? { companyId } : undefined });
+  async list(companyId?: string, search?: string) {
+    const params: Record<string, string> = {};
+    if (companyId) params.companyId = companyId;
+    if (search?.trim()) params.search = search.trim();
+    const { data } = await httpClient.get('/drivers', { params });
     return data.data as Driver[];
   }
 

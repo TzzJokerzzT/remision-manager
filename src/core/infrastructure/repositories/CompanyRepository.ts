@@ -7,8 +7,10 @@ import type {
 import { httpClient } from '../http/httpClient';
 
 export class CompanyRepository implements ICompanyRepository {
-  async list() {
-    const { data } = await httpClient.get('/companies');
+  async list(search?: string) {
+    const params: Record<string, string> = {};
+    if (search?.trim()) params.search = search.trim();
+    const { data } = await httpClient.get('/companies', { params });
     return data.data as Company[];
   }
 
