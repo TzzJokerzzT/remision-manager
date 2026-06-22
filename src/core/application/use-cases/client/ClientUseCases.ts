@@ -7,8 +7,8 @@ import type {
 export class ClientUseCases {
   constructor(private readonly clientRepo: IClientRepository) {}
 
-  list(companyId?: string) {
-    return this.clientRepo.list(companyId);
+  list(companyId?: string, search?: string) {
+    return this.clientRepo.list(companyId, search);
   }
 
   getById(id: string) {

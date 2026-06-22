@@ -7,8 +7,8 @@ import type {
 export class CompanyUseCases {
   constructor(private readonly companyRepo: ICompanyRepository) {}
 
-  list() {
-    return this.companyRepo.list();
+  list(search?: string) {
+    return this.companyRepo.list(search);
   }
 
   getById(id: string) {

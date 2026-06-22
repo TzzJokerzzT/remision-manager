@@ -7,8 +7,8 @@ import type {
 export class RemisionUseCases {
   constructor(private readonly remisionRepo: IRemisionRepository) {}
 
-  list(companyId?: string) {
-    return this.remisionRepo.list(companyId);
+  list(companyId?: string, search?: string) {
+    return this.remisionRepo.list(companyId, search);
   }
 
   getById(id: string) {
