@@ -98,7 +98,12 @@ export function ClientForm({
         </p>
       ) : null}
 
-      <Button type="submit" fullWidth isDisabled={isSubmitting} className="mt-2">
+      <Button
+        type="submit"
+        fullWidth
+        isDisabled={isSubmitting}
+        className="mt-2 self-start bg-primary gap-2 transition-color duration-300 ease-in-out hover:bg-primary/70"
+      >
         {isSubmitting ? 'Guardando...' : submitLabel}
       </Button>
     </form>
