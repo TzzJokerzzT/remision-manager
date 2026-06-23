@@ -1,11 +1,12 @@
 'use client';
 
-import { Avatar, Button, Chip, Input } from '@heroui/react';
+import { Avatar, Button, Chip } from '@heroui/react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { motion } from 'framer-motion';
 import { UserRound } from 'lucide-react';
-import { useForm } from 'react-hook-form';
+import { Controller, useForm } from 'react-hook-form';
 import { type ProfileFormValues, profileSchema } from '@/src/core/application/dtos/profile.dto';
+import { Dropzone } from '@/src/presentation/components/ui/Dropzone';
 import { FormField } from '@/src/presentation/components/ui/FormField';
 import { useAuthStore } from '@/src/presentation/stores/auth.store';
 import { getErrorMessage } from '@/src/shared/utils/getErrorMessage';
@@ -18,6 +19,7 @@ export function ProfileForm() {
   const {
     register,
     handleSubmit,
+    control,
     watch,
     formState: { errors },
   } = useForm<ProfileFormValues>({
@@ -64,11 +66,20 @@ export function ProfileForm() {
 
       <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
         <FormField label="Nombre completo" error={errors.name?.message} {...register('name')} />
-        <FormField
-          label="URL del logo de empresa"
-          placeholder="https://miempresa.com/logo.png"
-          error={errors.companyLogoUrl?.message}
-          {...register('companyLogoUrl')}
+
+        <Controller
+          name="companyLogoUrl"
+          control={control}
+          render={({ field }) => (
+            <Dropzone
+              label="Logo de la empresa (opcional)"
+              value={field.value}
+              onChange={(url) => field.onChange(url ?? '')}
+              error={errors.companyLogoUrl?.message}
+              helperText="PNG, JPG o WEBP. Máx 5MB."
+              folder="remision-manager/profiles"
+            />
+          )}
         />
 
         {updateProfile.isError && (
@@ -82,7 +93,11 @@ export function ProfileForm() {
           </p>
         )}
 
-        <Button type="submit" isDisabled={updateProfile.isPending} className="mt-2 self-start">
+        <Button
+          type="submit"
+          isDisabled={updateProfile.isPending}
+          className="mt-2 self-start bg-primary gap-2 transition-color duration-300 ease-in-out hover:bg-primary/70"
+        >
           {updateProfile.isPending ? 'Guardando...' : 'Guardar cambios'}
         </Button>
       </form>
