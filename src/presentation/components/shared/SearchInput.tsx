@@ -45,7 +45,12 @@ export function SearchInput({ value, onChange, onSubmit, onClear, placeholder }:
           </button>
         )}
       </div>
-      <Button onPress={onSubmit} size="sm" className="gap-1.5">
+      <Button
+        variant="primary"
+        onPress={onSubmit}
+        size="sm"
+        className="bg-primary gap-1.5 transition-color duration-300 ease-in-out hover:bg-primary/70"
+      >
         <Search className="h-3.5 w-3.5" />
         Buscar
       </Button>

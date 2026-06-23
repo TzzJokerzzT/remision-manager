@@ -1,11 +1,11 @@
 'use client';
 
-import { Button, useOverlayState } from '@heroui/react';
-import { FileText, Plus, Search as SearchIcon } from 'lucide-react';
+import { Button, Chip, Table, useOverlayState } from '@heroui/react';
+import { Eye, FileText, Pencil, Plus, Search as SearchIcon, Trash2 } from 'lucide-react';
+import Link from 'next/link';
 import { useState } from 'react';
 import type { RemisionFormValues } from '@/src/core/application/dtos/remision.dto';
 import type { Remision } from '@/src/core/domain/entities/Remision';
-import { AnimatedList } from '@/src/presentation/components/shared/AnimatedList';
 import { EmptyState } from '@/src/presentation/components/shared/EmptyState';
 import { PageHeader } from '@/src/presentation/components/shared/PageHeader';
 import { SearchInput } from '@/src/presentation/components/shared/SearchInput';
@@ -14,6 +14,7 @@ import { ConfirmDialog } from '@/src/presentation/components/ui/ConfirmDialog';
 import { FormModal } from '@/src/presentation/components/ui/FormModal';
 import { useClients } from '@/src/presentation/features/clients/hooks/useClients';
 import { useDrivers } from '@/src/presentation/features/drivers/hooks/useDrivers';
+import { formatCurrency, formatDate } from '@/src/presentation/lib/utils';
 import { useCompanyStore } from '@/src/presentation/stores/company.store';
 import {
   useCreateRemision,
@@ -21,7 +22,6 @@ import {
   useRemisiones,
   useUpdateRemision,
 } from '../hooks/useRemisiones';
-import { RemisionCard } from './RemisionCard';
 import { RemisionForm } from './RemisionForm';
 
 function cleanPayload(values: RemisionFormValues) {
@@ -118,7 +118,10 @@ export function RemisionList() {
         title="Remisiones"
         description={`Remisiones de ${selectedCompany.name}`}
         action={
-          <Button onPress={openCreate} className="gap-2">
+          <Button
+            onPress={openCreate}
+            className="bg-primary gap-2 transition-color duration-300 ease-in-out hover:bg-primary/70"
+          >
             <Plus className="h-4 w-4" /> Nueva remisión
           </Button>
         }
@@ -136,41 +139,102 @@ export function RemisionList() {
         <div className="flex justify-center py-16">
           <Spinner />
         </div>
-      ) : remisiones && remisiones.length > 0 ? (
-        <AnimatedList className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {remisiones.map((remision) => (
-            <RemisionCard
-              key={remision.id}
-              remision={remision}
-              client={clientsById.get(remision.clientId)}
-              driver={driversById.get(remision.driverId)}
-              onEdit={() => openEdit(remision)}
-              onDelete={() => openDelete(remision)}
-            />
-          ))}
-        </AnimatedList>
-      ) : appliedSearch ? (
-        <EmptyState
-          icon={SearchIcon}
-          title="Sin resultados"
-          description={`No se encontraron remisiones que coincidan con "${appliedSearch}".`}
-          action={
-            <Button onPress={handleSearchClear} variant="outline" className="mt-2 gap-2">
-              Limpiar busqueda
-            </Button>
-          }
-        />
       ) : (
-        <EmptyState
-          icon={FileText}
-          title="No hay remisiones"
-          description="Crea tu primera remisión para esta empresa. Necesitas al menos un cliente y un conductor registrados."
-          action={
-            <Button onPress={openCreate} variant="outline" className="mt-2 gap-2">
-              <Plus className="h-4 w-4" /> Crear remisión
-            </Button>
-          }
-        />
+        <Table variant="primary" className="border border-primary rounded-lg">
+          <Table.ScrollContainer>
+            <Table.Content aria-label="Lista de remisiones" className="min-w-[750px] p-2">
+              <Table.Header>
+                <Table.Column className="text-end">#</Table.Column>
+                <Table.Column isRowHeader>Cliente</Table.Column>
+                <Table.Column>Conductor</Table.Column>
+                <Table.Column>Tipo</Table.Column>
+                <Table.Column>Items</Table.Column>
+                <Table.Column>Fecha</Table.Column>
+                <Table.Column className="text-end">Acciones</Table.Column>
+              </Table.Header>
+              <Table.Body
+                renderEmptyState={() =>
+                  appliedSearch ? (
+                    <EmptyState
+                      icon={SearchIcon}
+                      title="Sin resultados"
+                      description={`No se encontraron remisiones que coincidan con "${appliedSearch}".`}
+                      action={
+                        <Button onPress={handleSearchClear} variant="outline" className="mt-2 gap-2">
+                          Limpiar busqueda
+                        </Button>
+                      }
+                    />
+                  ) : (
+                    <EmptyState
+                      icon={FileText}
+                      title="No hay remisiones"
+                      description="Crea tu primera remisión para esta empresa. Necesitas al menos un cliente y un conductor registrados."
+                      action={
+                        <Button onPress={openCreate} variant="outline" className="mt-2 gap-2">
+                          <Plus className="h-4 w-4" /> Crear remisión
+                        </Button>
+                      }
+                    />
+                  )
+                }
+              >
+                {(remisiones ?? []).map((remision) => {
+                  const client = clientsById.get(remision.clientId);
+                  const driver = driversById.get(remision.driverId);
+                  const isPriced = remision.type === 'priced';
+
+                  return (
+                    <Table.Row key={remision.id} id={remision.id}>
+                      <Table.Cell className="text-end text-muted">{remision.consecutive}</Table.Cell>
+                      <Table.Cell className="font-medium">{client?.name ?? '—'}</Table.Cell>
+                      <Table.Cell>{driver?.name ?? '—'}</Table.Cell>
+                      <Table.Cell>
+                        <Chip size="sm" variant="soft" color={isPriced ? 'accent' : 'default'}>
+                          {isPriced ? 'Con precio + IVA' : 'Solo cantidad'}
+                        </Chip>
+                      </Table.Cell>
+                      <Table.Cell>
+                        <span className="text-muted">{remision.items.length}</span>
+                        {isPriced && typeof remision.total === 'number' && (
+                          <span className="ml-1.5 font-medium">{formatCurrency(remision.total)}</span>
+                        )}
+                      </Table.Cell>
+                      <Table.Cell>{formatDate(remision.createdAt)}</Table.Cell>
+                      <Table.Cell>
+                        <div className="flex items-center justify-end gap-1">
+                          <Link href={`/dashboard/remisiones/${remision.id}`}>
+                            <Button isIconOnly size="sm" variant="ghost" aria-label="Ver remisión">
+                              <Eye className="size-4" />
+                            </Button>
+                          </Link>
+                          <Button
+                            isIconOnly
+                            size="sm"
+                            variant="ghost"
+                            aria-label="Editar remisión"
+                            onPress={() => openEdit(remision)}
+                          >
+                            <Pencil className="size-4" />
+                          </Button>
+                          <Button
+                            isIconOnly
+                            size="sm"
+                            variant="ghost"
+                            aria-label="Eliminar remisión"
+                            onPress={() => openDelete(remision)}
+                          >
+                            <Trash2 className="size-4 text-danger" />
+                          </Button>
+                        </div>
+                      </Table.Cell>
+                    </Table.Row>
+                  );
+                })}
+              </Table.Body>
+            </Table.Content>
+          </Table.ScrollContainer>
+        </Table>
       )}
 
       <FormModal
