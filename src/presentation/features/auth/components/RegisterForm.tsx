@@ -66,7 +66,12 @@ export function RegisterForm() {
         </p>
       )}
 
-      <Button type="submit" fullWidth isDisabled={registerMutation.isPending} className="mt-2">
+      <Button
+        type="submit"
+        fullWidth
+        isDisabled={registerMutation.isPending}
+        className="mt-2 self-start bg-primary gap-2 transition-color duration-300 ease-in-out hover:bg-primary/70"
+      >
         {registerMutation.isPending ? 'Creando cuenta...' : 'Crear cuenta'}
       </Button>
 

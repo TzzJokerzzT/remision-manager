@@ -6,6 +6,7 @@ import { type CompanyFormValues, companySchema } from '@/src/core/application/dt
 import { Dropzone } from '@/src/presentation/components/ui/Dropzone';
 import { FormField } from '@/src/presentation/components/ui/FormField';
 import { getErrorMessage } from '@/src/shared/utils/getErrorMessage';
+
 interface CompanyFormProps {
   defaultValues?: Partial<CompanyFormValues>;
   isSubmitting?: boolean;
@@ -80,7 +81,12 @@ export function CompanyForm({
           {getErrorMessage(submitError, 'No se pudo guardar la empresa')}
         </p>
       ) : null}
-      <Button type="submit" fullWidth isDisabled={isSubmitting} className="mt-2">
+      <Button
+        type="submit"
+        fullWidth
+        isDisabled={isSubmitting}
+        className="mt-2 self-start bg-primary gap-2 transition-color duration-300 ease-in-out hover:bg-primary/70"
+      >
         {isSubmitting ? 'Guardando...' : submitLabel}
       </Button>
     </form>

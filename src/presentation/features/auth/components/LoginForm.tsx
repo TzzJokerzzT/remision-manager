@@ -52,7 +52,12 @@ export function LoginForm() {
         </p>
       )}
 
-      <Button type="submit" fullWidth isDisabled={loginMutation.isPending} className="mt-2">
+      <Button
+        type="submit"
+        fullWidth
+        isDisabled={loginMutation.isPending}
+        className="mt-2 self-start bg-primary gap-2 transition-color duration-300 ease-in-out hover:bg-primary/70"
+      >
         {loginMutation.isPending ? 'Ingresando...' : 'Ingresar'}
       </Button>
 
