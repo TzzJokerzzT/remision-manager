@@ -21,7 +21,7 @@ const ZEBRA = rgb(0.975, 0.975, 0.98);
 const WHITE = rgb(1, 1, 1);
 
 const LOGO_BOX = 56;
-const HEADER_HEIGHT = 96;
+const HEADER_HEIGHT = 80;
 
 function formatCurrency(value: number) {
   return `$ ${value.toLocaleString('es-CO', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`;
@@ -197,14 +197,14 @@ export async function generateRemisionPdf({
 
     // Bloque derecho: título + badge de consecutivo
     const rightX = PAGE_WIDTH - MARGIN;
-    textRight('REMISIÓN', rightX, PAGE_HEIGHT - MARGIN - 2, { font: fontBold, size: 20, color: ACCENT });
+    textRight('REMISIÓN', rightX, PAGE_HEIGHT - MARGIN - 2, { font: fontBold, size: 16, color: ACCENT });
 
     const badgeText = `No. ${String(remision.consecutive).padStart(5, '0')}`;
     const badgeSize = 11;
     const badgePaddingX = 10;
     const badgeWidth = fontBold.widthOfTextAtSize(badgeText, badgeSize) + badgePaddingX * 2;
     const badgeHeight = 22;
-    const badgeTop = PAGE_HEIGHT - MARGIN - 28;
+    const badgeTop = PAGE_HEIGHT - MARGIN - 22;
     rect(rightX - badgeWidth, badgeTop, badgeWidth, badgeHeight, { fill: ACCENT_SOFT });
     text(badgeText, rightX - badgeWidth + badgePaddingX, badgeTop - badgeHeight + 6.5, {
       font: fontBold,
@@ -212,9 +212,9 @@ export async function generateRemisionPdf({
       color: ACCENT,
     });
 
-    textRight(formatDate(remision.createdAt), rightX, badgeTop - badgeHeight - 14, { size: 9, color: MUTED });
+    textRight(formatDate(remision.createdAt), rightX, badgeTop - badgeHeight - 10, { size: 9, color: MUTED });
     const typeLabel = isPriced ? 'Con precio + IVA' : 'Solo cantidad';
-    textRight(typeLabel, rightX, badgeTop - badgeHeight - 27, { size: 8.5, color: SUBTLE });
+    textRight(typeLabel, rightX, badgeTop - badgeHeight - 21, { size: 8.5, color: SUBTLE });
 
     y = PAGE_HEIGHT - MARGIN - HEADER_HEIGHT;
     hLine(y, LINE, 1.4);
@@ -267,48 +267,28 @@ export async function generateRemisionPdf({
 
   drawMainHeader();
 
-  // ============ TARJETAS CLIENTE / CONDUCTOR ============
-  const cardGap = 14;
-  const cardWidth = (CONTENT_WIDTH - cardGap) / 2;
-  const cardHeight = 64;
+  // ============ TARJETA CLIENTE ============
+  const cardHeight = 60;
   const cardTop = y;
 
-  rect(MARGIN, cardTop, cardWidth, cardHeight, { fill: CARD_BG });
-  rect(MARGIN + cardWidth + cardGap, cardTop, cardWidth, cardHeight, { fill: CARD_BG });
+  rect(MARGIN, cardTop, CONTENT_WIDTH, cardHeight, { fill: CARD_BG });
 
   const padX = 12;
-  let leftY = cardTop - 16;
-  let rightY = cardTop - 16;
-  const leftX = MARGIN + padX;
-  const rightX2 = MARGIN + cardWidth + cardGap + padX;
-  const cardTextMax = cardWidth - padX * 2;
+  let clientY = cardTop - 16;
+  const cardTextX = MARGIN + padX;
 
-  text('CLIENTE', leftX, leftY, { font: fontBold, size: 8, color: SUBTLE });
-  text('CONDUCTOR', rightX2, rightY, { font: fontBold, size: 8, color: SUBTLE });
-  leftY -= 15;
-  rightY -= 15;
+  text('CLIENTE', cardTextX, clientY, { font: fontBold, size: 8, color: SUBTLE });
+  clientY -= 15;
 
-  text(truncateToWidth(client.name, fontBold, 11, cardTextMax), leftX, leftY, { font: fontBold, size: 11 });
-  text(truncateToWidth(driver.name, fontBold, 11, cardTextMax), rightX2, rightY, {
-    font: fontBold,
-    size: 11,
-  });
-  leftY -= 14;
-  rightY -= 14;
+  text(client.name, cardTextX, clientY, { font: fontBold, size: 11 });
+  clientY -= 14;
 
-  text(`Doc. ${client.documentId}`, leftX, leftY, { size: 8.5, color: MUTED });
-  text(`Doc. ${driver.documentId}`, rightX2, rightY, { size: 8.5, color: MUTED });
-  leftY -= 12;
-  rightY -= 12;
+  text(`Doc. ${client.documentId}`, cardTextX, clientY, { size: 8.5, color: MUTED });
+  clientY -= 12;
 
   const clientExtra = [client.phone, client.address].filter(Boolean).join(' · ');
-  const driverExtra = [driver.phone, driver.vehiclePlate ? `Placa ${driver.vehiclePlate}` : null]
-    .filter(Boolean)
-    .join(' · ');
   if (clientExtra)
-    text(truncateToWidth(clientExtra, font, 8.5, cardTextMax), leftX, leftY, { size: 8.5, color: MUTED });
-  if (driverExtra)
-    text(truncateToWidth(driverExtra, font, 8.5, cardTextMax), rightX2, rightY, { size: 8.5, color: MUTED });
+    text(clientExtra, cardTextX, clientY, { size: 8.5, color: MUTED });
 
   y = cardTop - cardHeight - 26;
 
@@ -415,6 +395,32 @@ export async function generateRemisionPdf({
     }
     y -= 16;
   }
+
+  // ============ DATOS CONDUCTOR ============
+  ensureSpace(100);
+  y -= 14;
+  const driverCardHeight = 60;
+
+  rect(MARGIN, y, CONTENT_WIDTH, driverCardHeight, { fill: CARD_BG });
+  let driverY = y - 16;
+  const driverX = MARGIN + padX;
+
+  text('CONDUCTOR', driverX, driverY, { font: fontBold, size: 8, color: SUBTLE });
+  driverY -= 15;
+
+  text(driver.name, driverX, driverY, { font: fontBold, size: 11 });
+  driverY -= 14;
+
+  text(`Doc. ${driver.documentId}`, driverX, driverY, { size: 8.5, color: MUTED });
+  driverY -= 12;
+
+  const driverExtra = [driver.phone, driver.vehiclePlate ? `Placa ${driver.vehiclePlate}` : null]
+    .filter(Boolean)
+    .join(' · ');
+  if (driverExtra)
+    text(driverExtra, driverX, driverY, { size: 8.5, color: MUTED });
+
+  y = y - driverCardHeight - 26;
 
   // ============ FIRMAS ============
   ensureSpace(80);
