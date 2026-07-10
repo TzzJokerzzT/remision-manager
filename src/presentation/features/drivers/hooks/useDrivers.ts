@@ -1,9 +1,11 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { isAxiosError } from 'axios';
 import { driverUseCases } from '@/src/core/di/container';
 import type {
   CreateDriverPayload,
   UpdateDriverPayload,
 } from '@/src/core/domain/repositories/IDriverRepository';
+import { showToast } from '@/src/presentation/components/shared/Toast';
 import { queryKeys } from '@/src/shared/constants/queryKeys';
 
 export function useDrivers(companyId?: string, search?: string) {
@@ -17,8 +19,15 @@ export function useCreateDriver() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (payload: CreateDriverPayload) => driverUseCases.create(payload),
-    onSuccess: () => {
+    onSuccess: ({ message }) => {
       queryClient.invalidateQueries({ queryKey: ['drivers'] });
+      showToast(message, 'success');
+    },
+    onError: (error) => {
+      const msg =
+        (isAxiosError(error) && (error.response?.data as { message?: string })?.message) ||
+        (error as Error).message;
+      showToast(msg, 'error');
     },
   });
 }
@@ -28,8 +37,15 @@ export function useUpdateDriver() {
   return useMutation({
     mutationFn: ({ id, payload }: { id: string; payload: UpdateDriverPayload }) =>
       driverUseCases.update(id, payload),
-    onSuccess: () => {
+    onSuccess: ({ message }) => {
       queryClient.invalidateQueries({ queryKey: ['drivers'] });
+      showToast(message, 'success');
+    },
+    onError: (error) => {
+      const msg =
+        (isAxiosError(error) && (error.response?.data as { message?: string })?.message) ||
+        (error as Error).message;
+      showToast(msg, 'error');
     },
   });
 }
@@ -40,6 +56,10 @@ export function useDeleteDriver() {
     mutationFn: (id: string) => driverUseCases.delete(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['drivers'] });
+      showToast('Conductor eliminado exitosamente', 'success');
+    },
+    onError: (error) => {
+      showToast(error.message || 'Error al eliminar el conductor', 'error');
     },
   });
 }

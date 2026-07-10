@@ -22,12 +22,18 @@ export class ClientRepository implements IClientRepository {
 
   async create(payload: CreateClientPayload) {
     const { data } = await httpClient.post('/clients', payload);
-    return data.data as Client;
+    return {
+      client: data.data as Client,
+      message: data.message,
+    };
   }
 
   async update(id: string, payload: UpdateClientPayload) {
     const { data } = await httpClient.patch(`/clients/${id}`, payload);
-    return data.data as Client;
+    return {
+      client: data.data as Client,
+      message: data.message,
+    };
   }
 
   async delete(id: string) {

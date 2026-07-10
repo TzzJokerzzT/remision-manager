@@ -4,6 +4,7 @@ import type {
   CreateRemisionPayload,
   UpdateRemisionPayload,
 } from '@/src/core/domain/repositories/IRemisionRepository';
+import { showToast } from '@/src/presentation/components/shared/Toast';
 import { queryKeys } from '@/src/shared/constants/queryKeys';
 
 export function useRemisiones(companyId?: string, search?: string) {
@@ -28,6 +29,10 @@ export function useCreateRemision() {
     mutationFn: (payload: CreateRemisionPayload) => remisionUseCases.create(payload),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['remisiones'] });
+      showToast('Remisión creada exitosamente', 'success');
+    },
+    onError: (error) => {
+      showToast(error.message || 'Error al crear la remisión', 'error');
     },
   });
 }
@@ -39,6 +44,10 @@ export function useUpdateRemision() {
       remisionUseCases.update(id, payload),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['remisiones'] });
+      showToast('Remision actualizada exitosamente', 'success');
+    },
+    onError: (error) => {
+      showToast(error.message || 'Error al actualizar la remisión', 'error');
     },
   });
 }
@@ -49,6 +58,10 @@ export function useDeleteRemision() {
     mutationFn: (id: string) => remisionUseCases.delete(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['remisiones'] });
+      showToast('Remision eliminada exitosamente', 'success');
+    },
+    onError: (error) => {
+      showToast(error.message || 'Error al eliminar la remisión', 'error');
     },
   });
 }

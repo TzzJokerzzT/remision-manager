@@ -17,20 +17,30 @@ export class DriverRepository implements IDriverRepository {
 
   async getById(id: string) {
     const { data } = await httpClient.get(`/drivers/${id}`);
-    return data.data as Driver;
+    return {
+      driver: data.data as Driver,
+      message: data.message as string,
+    };
   }
 
   async create(payload: CreateDriverPayload) {
     const { data } = await httpClient.post('/drivers', payload);
-    return data.data as Driver;
+    return {
+      driver: data.data as Driver,
+      message: data.message as string,
+    };
   }
 
   async update(id: string, payload: UpdateDriverPayload) {
     const { data } = await httpClient.patch(`/drivers/${id}`, payload);
-    return data.data as Driver;
+    return {
+      driver: data.data as Driver,
+      message: data.message as string,
+    };
   }
 
   async delete(id: string) {
-    await httpClient.delete(`/drivers/${id}`);
+    const { data } = await httpClient.delete(`/drivers/${id}`);
+    return data.message;
   }
 }

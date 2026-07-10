@@ -12,7 +12,7 @@ export interface Remision {
   type: RemisionType;
   companyId: string;
   clientId: string;
-  driverId: string;
+  driverId?: string;
   items: RemisionItem[];
   subtotal?: number;
   ivaPercentage?: number;

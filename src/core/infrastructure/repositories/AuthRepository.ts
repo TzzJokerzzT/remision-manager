@@ -10,12 +10,18 @@ import { httpClient } from '../http/httpClient';
 export class AuthRepository implements IAuthRepository {
   async register(payload: RegisterPayload) {
     const { data } = await httpClient.post('/auth/register', payload);
-    return data.data as { user: User; tokens: AuthTokens };
+    return {
+      ...(data.data as { user: User }),
+      message: data.message as string,
+    };
   }
 
   async login(payload: LoginPayload) {
     const { data } = await httpClient.post('/auth/login', payload);
-    return data.data as { user: User; tokens: AuthTokens };
+    return {
+      ...(data.data as { user: User; tokens: AuthTokens }),
+      message: data.message as string,
+    };
   }
 
   async refresh(refreshToken: string) {
@@ -24,7 +30,8 @@ export class AuthRepository implements IAuthRepository {
   }
 
   async logout() {
-    await httpClient.post('/auth/logout');
+    const { data } = await httpClient.post('/auth/logout');
+    return data.message;
   }
 
   async me() {

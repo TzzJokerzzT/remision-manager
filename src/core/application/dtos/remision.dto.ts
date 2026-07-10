@@ -12,7 +12,7 @@ export const remisionSchema = z
     type: z.enum(['priced', 'quantity_only']),
     companyId: z.string().min(1, 'Selecciona una empresa'),
     clientId: z.string().min(1, 'Selecciona un cliente'),
-    driverId: z.string().min(1, 'Selecciona un conductor'),
+    driverId: z.string().optional().or(z.literal('')),
     items: z.array(remisionItemSchema).min(1, 'Agrega al menos un ítem'),
     ivaPercentage: z.number().min(0).max(100).optional(),
     notes: z.string().trim().max(500).optional().or(z.literal('')),

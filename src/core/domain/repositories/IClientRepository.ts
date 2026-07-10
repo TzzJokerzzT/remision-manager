@@ -14,7 +14,7 @@ export type UpdateClientPayload = Partial<Omit<CreateClientPayload, 'companyId'>
 export interface IClientRepository {
   list(companyId?: string, search?: string): Promise<Client[]>;
   getById(id: string): Promise<Client>;
-  create(payload: CreateClientPayload): Promise<Client>;
-  update(id: string, payload: UpdateClientPayload): Promise<Client>;
+  create(payload: CreateClientPayload): Promise<{ client: Client; message: string }>;
+  update(id: string, payload: UpdateClientPayload): Promise<{ client: Client; message: string }>;
   delete(id: string): Promise<void>;
 }

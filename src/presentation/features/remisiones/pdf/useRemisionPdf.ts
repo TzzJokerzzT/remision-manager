@@ -17,10 +17,10 @@ export function useRemisionPdf({ remision, company, client, driver }: UseRemisio
   const [isGenerating, setIsGenerating] = useState(false);
   const [error, setError] = useState<Error | null>(null);
 
-  const isReady = !!remision && !!company && !!client && !!driver;
+  const isReady = !!remision && !!company && !!client;
 
   useEffect(() => {
-    if (!remision || !company || !client || !driver) {
+    if (!remision || !company || !client) {
       setPdfBytes(null);
       return;
     }

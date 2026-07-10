@@ -132,7 +132,10 @@ export function CompanyManager() {
                       title="Aún no tienes empresas"
                       description="Crea tu primera empresa para empezar a generar remisiones."
                       action={
-                        <Button onPress={openCreate} className="mt-2">
+                        <Button
+                          onPress={openCreate}
+                          className="text-background mt-2 bg-primary transition-color duration-300 ease-in-out hover:bg-primary/70"
+                        >
                           <Plus className="mr-1.5 h-4 w-4" /> Crear empresa
                         </Button>
                       }
@@ -172,6 +175,7 @@ export function CompanyManager() {
                             size="sm"
                             variant={isSelected ? 'primary' : 'outline'}
                             onPress={() => setSelectedCompany(isSelected ? null : company)}
+                            className="self-start bg-primary transition-color duration-300 ease-in-out hover:bg-primary/70"
                           >
                             {isSelected ? 'Deseleccionar' : 'Seleccionar'}
                           </Button>

@@ -140,7 +140,11 @@ export function ClientList() {
                       title="No hay clientes"
                       description="Crea tu primer cliente para asociarlo a tus remisiones."
                       action={
-                        <Button onPress={openCreate} variant="outline" className="mt-2 gap-2">
+                        <Button
+                          onPress={openCreate}
+                          variant="outline"
+                          className="text-background mt-2 gap-2 bg-primary transition-color duration-300 ease-in-out hover:bg-primary/70"
+                        >
                           <Plus className="h-4 w-4" /> Crear cliente
                         </Button>
                       }

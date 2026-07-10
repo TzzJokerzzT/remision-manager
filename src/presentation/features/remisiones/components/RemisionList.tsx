@@ -29,7 +29,7 @@ function cleanPayload(values: RemisionFormValues) {
     type: values.type,
     companyId: values.companyId,
     clientId: values.clientId,
-    driverId: values.driverId,
+    driverId: values.driverId || undefined,
     items: values.items.map((item) => ({
       description: item.description,
       quantity: item.quantity,
@@ -171,7 +171,11 @@ export function RemisionList() {
                       title="No hay remisiones"
                       description="Crea tu primera remisión para esta empresa. Necesitas al menos un cliente y un conductor registrados."
                       action={
-                        <Button onPress={openCreate} variant="outline" className="mt-2 gap-2">
+                        <Button
+                          onPress={openCreate}
+                          variant="outline"
+                          className="text-background mt-2 gap-2 bg-primary transition-color duration-300 ease-in-out hover:bg-primary/70"
+                        >
                           <Plus className="h-4 w-4" /> Crear remisión
                         </Button>
                       }

@@ -22,12 +22,18 @@ export class RemisionRepository implements IRemisionRepository {
 
   async create(payload: CreateRemisionPayload) {
     const { data } = await httpClient.post('/remisiones', payload);
-    return data.data as Remision;
+    return {
+      remision: data.data as Remision,
+      message: data.message as string,
+    };
   }
 
   async update(id: string, payload: UpdateRemisionPayload) {
     const { data } = await httpClient.patch(`/remisiones/${id}`, payload);
-    return data.data as Remision;
+    return {
+      remision: data.data as Remision,
+      message: data.message as string,
+    };
   }
 
   async delete(id: string) {

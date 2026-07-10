@@ -1,20 +1,24 @@
 import { useMutation } from '@tanstack/react-query';
+import { isAxiosError } from 'axios';
 import { useRouter } from 'next/navigation';
 import { authUseCases } from '@/src/core/di/container';
 import type { RegisterPayload } from '@/src/core/domain/repositories/IAuthRepository';
-import { tokenStorage } from '@/src/core/infrastructure/storage/tokenStorage';
-import { useAuthStore } from '@/src/presentation/stores/auth.store';
+import { showToast } from '@/src/presentation/components/shared/Toast';
 
 export function useRegister() {
-  const setUser = useAuthStore((s) => s.setUser);
   const router = useRouter();
 
   return useMutation({
     mutationFn: (payload: RegisterPayload) => authUseCases.register(payload),
-    onSuccess: ({ user, tokens }) => {
-      tokenStorage.setTokens(tokens.accessToken, tokens.refreshToken);
-      setUser(user);
-      router.replace('/dashboard');
+    onSuccess: ({ message }) => {
+      router.replace('/login');
+      showToast(message, 'success');
+    },
+    onError: (error) => {
+      const msg =
+        (isAxiosError(error) && (error.response?.data as { message?: string })?.message) ||
+        (error as Error).message;
+      showToast(msg, 'error');
     },
   });
 }

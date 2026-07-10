@@ -73,7 +73,7 @@ interface BuildRemisionPdfParams {
   remision: Remision;
   company: Company;
   client: Client;
-  driver: Driver;
+  driver?: Driver;
 }
 
 export async function generateRemisionPdf({
@@ -397,30 +397,32 @@ export async function generateRemisionPdf({
   }
 
   // ============ DATOS CONDUCTOR ============
-  ensureSpace(100);
-  y -= 14;
-  const driverCardHeight = 60;
+  if (driver) {
+    ensureSpace(100);
+    y -= 14;
+    const driverCardHeight = 60;
 
-  rect(MARGIN, y, CONTENT_WIDTH, driverCardHeight, { fill: CARD_BG });
-  let driverY = y - 16;
-  const driverX = MARGIN + padX;
+    rect(MARGIN, y, CONTENT_WIDTH, driverCardHeight, { fill: CARD_BG });
+    let driverY = y - 16;
+    const driverX = MARGIN + padX;
 
-  text('CONDUCTOR', driverX, driverY, { font: fontBold, size: 8, color: SUBTLE });
-  driverY -= 15;
+    text('CONDUCTOR', driverX, driverY, { font: fontBold, size: 8, color: SUBTLE });
+    driverY -= 15;
 
-  text(driver.name, driverX, driverY, { font: fontBold, size: 11 });
-  driverY -= 14;
+    text(driver.name, driverX, driverY, { font: fontBold, size: 11 });
+    driverY -= 14;
 
-  text(`Doc. ${driver.documentId}`, driverX, driverY, { size: 8.5, color: MUTED });
-  driverY -= 12;
+    text(`Doc. ${driver.documentId}`, driverX, driverY, { size: 8.5, color: MUTED });
+    driverY -= 12;
 
-  const driverExtra = [driver.phone, driver.vehiclePlate ? `Placa ${driver.vehiclePlate}` : null]
-    .filter(Boolean)
-    .join(' · ');
-  if (driverExtra)
-    text(driverExtra, driverX, driverY, { size: 8.5, color: MUTED });
+    const driverExtra = [driver.phone, driver.vehiclePlate ? `Placa ${driver.vehiclePlate}` : null]
+      .filter(Boolean)
+      .join(' · ');
+    if (driverExtra)
+      text(driverExtra, driverX, driverY, { size: 8.5, color: MUTED });
 
-  y = y - driverCardHeight - 26;
+    y = y - driverCardHeight - 26;
+  }
 
   // ============ FIRMAS ============
   ensureSpace(80);

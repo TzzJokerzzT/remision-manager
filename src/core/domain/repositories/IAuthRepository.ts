@@ -17,8 +17,8 @@ export interface LoginPayload {
 }
 
 export interface IAuthRepository {
-  register(payload: RegisterPayload): Promise<{ user: User; tokens: AuthTokens }>;
-  login(payload: LoginPayload): Promise<{ user: User; tokens: AuthTokens }>;
+  register(payload: RegisterPayload): Promise<{ user: User; message: string }>;
+  login(payload: LoginPayload): Promise<{ user: User; tokens: AuthTokens; message: string }>;
   refresh(refreshToken: string): Promise<AuthTokens>;
   logout(): Promise<void>;
   me(): Promise<User>;

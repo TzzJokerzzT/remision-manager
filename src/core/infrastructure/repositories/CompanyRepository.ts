@@ -21,12 +21,18 @@ export class CompanyRepository implements ICompanyRepository {
 
   async create(payload: CreateCompanyPayload) {
     const { data } = await httpClient.post('/companies', payload);
-    return data.data as Company;
+    return {
+      company: data.data as Company,
+      message: data.message,
+    };
   }
 
   async update(id: string, payload: UpdateCompanyPayload) {
     const { data } = await httpClient.patch(`/companies/${id}`, payload);
-    return data.data as Company;
+    return {
+      company: data.data as Company,
+      message: data.message,
+    };
   }
 
   async delete(id: string) {

@@ -14,7 +14,7 @@ export type UpdateCompanyPayload = Partial<CreateCompanyPayload>;
 export interface ICompanyRepository {
   list(search?: string): Promise<Company[]>;
   getById(id: string): Promise<Company>;
-  create(payload: CreateCompanyPayload): Promise<Company>;
-  update(id: string, payload: UpdateCompanyPayload): Promise<Company>;
+  create(payload: CreateCompanyPayload): Promise<{ company: Company; message: string }>;
+  update(id: string, payload: UpdateCompanyPayload): Promise<{ company: Company; message: string }>;
   delete(id: string): Promise<void>;
 }
