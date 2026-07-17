@@ -8,21 +8,23 @@ import Link from 'next/link';
 import { useMemo } from 'react';
 import { EmptyState } from '@/src/presentation/components/shared/EmptyState';
 import { Spinner } from '@/src/presentation/components/shared/Spinner';
+import { showToast } from '@/src/presentation/components/shared/Toast';
 import { useClients } from '@/src/presentation/features/clients/hooks/useClients';
 import { useCompanies } from '@/src/presentation/features/companies/hooks/useCompanies';
 import { useDrivers } from '@/src/presentation/features/drivers/hooks/useDrivers';
 import { useRemision } from '../hooks/useRemisiones';
-import { useRemisionPdf } from './useRemisionPdf';
+
+// import { RemisionDocument } from './RemisionDocument';
 
 // PDFSlick toca APIs del navegador (canvas, worker) al cargar: se desactiva SSR.
-const RemisionPdfViewer = dynamic(() => import('./RemisionPdfViewer').then((mod) => mod.RemisionPdfViewer), {
+const RemisionDocument = dynamic(() => import('./RemisionDocument').then((mod) => mod.RemisionDocument), {
   ssr: false,
   loading: () => <ViewerSkeleton />,
 });
 
 function ViewerSkeleton() {
   return (
-    <div className="flex h-[70vh] items-center justify-center rounded-2xl border border-default-200 bg-default-100 dark:bg-default-50/5">
+    <div className="border-default-200 bg-default-100 dark:bg-default-50/5 flex h-[70vh] items-center justify-center rounded-2xl border">
       <Spinner />
     </div>
   );
@@ -41,7 +43,7 @@ interface RemisionDetailProps {
 }
 
 export function RemisionDetail({ remisionId }: RemisionDetailProps) {
-  const { data: remision, isLoading: isLoadingRemision } = useRemision(remisionId);
+  const { data: remision, isLoading: isLoadingRemision, error } = useRemision(remisionId);
   const { data: companies } = useCompanies();
   const { data: clients } = useClients(remision?.companyId);
   const { data: drivers } = useDrivers(remision?.companyId);
@@ -49,8 +51,6 @@ export function RemisionDetail({ remisionId }: RemisionDetailProps) {
   const company = useMemo(() => companies?.find((c) => c.id === remision?.companyId), [companies, remision]);
   const client = useMemo(() => clients?.find((c) => c.id === remision?.clientId), [clients, remision]);
   const driver = useMemo(() => drivers?.find((d) => d.id === remision?.driverId), [drivers, remision]);
-
-  const { pdfBytes, isGenerating, isReady, error } = useRemisionPdf({ remision, company, client, driver });
 
   if (isLoadingRemision) {
     return (
@@ -78,7 +78,6 @@ export function RemisionDetail({ remisionId }: RemisionDetailProps) {
   }
 
   const isPriced = remision.type === 'priced';
-  const filename = `remision-${String(remision.consecutive).padStart(5, '0')}.pdf`;
 
   return (
     <motion.div
@@ -112,28 +111,28 @@ export function RemisionDetail({ remisionId }: RemisionDetailProps) {
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-[320px_1fr]">
         {/* Resumen de datos */}
         <div className="flex flex-col gap-4">
-          <div className="rounded-2xl border border-default-200 p-4">
-            <p className="text-xs font-medium uppercase tracking-wide text-foreground/40">Empresa</p>
+          <div className="border-default-200 rounded-2xl border p-4">
+            <p className="text-xs font-medium tracking-wide text-foreground/40 uppercase">Empresa</p>
             <p className="mt-1 font-medium text-foreground">{company?.name ?? '—'}</p>
             <p className="text-xs text-foreground/50">NIT {company?.nit}</p>
           </div>
 
-          <div className="rounded-2xl border border-default-200 p-4">
-            <p className="text-xs font-medium uppercase tracking-wide text-foreground/40">Cliente</p>
+          <div className="border-default-200 rounded-2xl border p-4">
+            <p className="text-xs font-medium tracking-wide text-foreground/40 uppercase">Cliente</p>
             <p className="mt-1 font-medium text-foreground">{client?.name ?? '—'}</p>
             <p className="text-xs text-foreground/50">{client?.documentId}</p>
           </div>
 
-          <div className="rounded-2xl border border-default-200 p-4">
-            <p className="text-xs font-medium uppercase tracking-wide text-foreground/40">Conductor</p>
+          <div className="border-default-200 rounded-2xl border p-4">
+            <p className="text-xs font-medium tracking-wide text-foreground/40 uppercase">Conductor</p>
             <p className="mt-1 font-medium text-foreground">{driver?.name ?? '—'}</p>
             <p className="text-xs text-foreground/50">
               {driver?.documentId} {driver?.vehiclePlate ? `· Placa ${driver.vehiclePlate}` : ''}
             </p>
           </div>
 
-          <div className="rounded-2xl border border-default-200 p-4">
-            <p className="text-xs font-medium uppercase tracking-wide text-foreground/40">Ítems</p>
+          <div className="border-default-200 rounded-2xl border p-4">
+            <p className="text-xs font-medium tracking-wide text-foreground/40 uppercase">Ítems</p>
             <ul className="mt-2 flex flex-col gap-2">
               {remision.items.map((item, index) => (
                 // biome-ignore lint/suspicious/noArrayIndexKey: los ítems de la remisión no tienen id propio
@@ -150,7 +149,7 @@ export function RemisionDetail({ remisionId }: RemisionDetailProps) {
               ))}
             </ul>
             {isPriced && (
-              <div className="mt-3 flex flex-col gap-1 border-t border-default-200 pt-3 text-sm">
+              <div className="border-default-200 mt-3 flex flex-col gap-1 border-t pt-3 text-sm">
                 <div className="flex justify-between text-foreground/60">
                   <span>Subtotal</span>
                   <span>{formatCurrency(remision.subtotal ?? 0)}</span>
@@ -168,8 +167,8 @@ export function RemisionDetail({ remisionId }: RemisionDetailProps) {
           </div>
 
           {remision.notes && (
-            <div className="rounded-2xl border border-default-200 p-4">
-              <p className="text-xs font-medium uppercase tracking-wide text-foreground/40">Notas</p>
+            <div className="border-default-200 rounded-2xl border p-4">
+              <p className="text-xs font-medium tracking-wide text-foreground/40 uppercase">Notas</p>
               <p className="mt-1 text-sm text-foreground/80">{remision.notes}</p>
             </div>
           )}
@@ -179,11 +178,11 @@ export function RemisionDetail({ remisionId }: RemisionDetailProps) {
         <div className="flex flex-col gap-3">
           {error ? (
             <EmptyState icon={FileWarning} title="No se pudo generar el PDF" description={error.message} />
-          ) : !isReady || isGenerating || !pdfBytes ? (
+          ) : isLoadingRemision ? (
             <ViewerSkeleton />
           ) : (
             <>
-              <RemisionPdfViewer pdfBytes={pdfBytes} filename={filename} />
+              <RemisionDocument remision={remision} company={company} client={client} driver={driver} />
               <p className="flex items-center gap-1.5 text-xs text-foreground/40">
                 <ExternalLink className="h-3 w-3" /> El PDF se genera en tu navegador a partir de los datos de
                 la remisión, usando PDFSlick para la vista previa.
