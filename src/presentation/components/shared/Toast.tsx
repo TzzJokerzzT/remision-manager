@@ -95,11 +95,9 @@ export function showToast(
   options?: ShowToastOptions,
 ): string {
   const isSuccess = status === 'success';
-
   return toastQueue.add({
     title: options?.title ?? (isSuccess ? 'Éxito' : 'Error'),
     description: message,
     variant: isSuccess ? 'success' : 'danger',
-    timeout: options?.timeout,
   });
 }
