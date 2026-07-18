@@ -1,6 +1,7 @@
 'use client';
 
 import { Loader2, UploadCloud, X } from 'lucide-react';
+import Image from 'next/image';
 import { type ChangeEvent, type DragEvent, useId, useRef, useState } from 'react';
 import { type CloudinaryUploadResult, uploadToCloudinary } from '@/src/shared/utils/cloudinary';
 
@@ -155,7 +156,13 @@ export function Dropzone({
         {displayUrl ? (
           <div className="relative">
             {/* eslint-disable-next-line @next/next/no-img-element -- preview de blob: y de Cloudinary, no requiere optimización de next/image */}
-            <img src={displayUrl} alt="Vista previa" className="h-24 w-24 rounded-xl object-cover" />
+            <Image
+              width={200}
+              height={200}
+              src={displayUrl}
+              alt="Vista previa"
+              className="h-24 w-24 rounded-xl object-cover"
+            />
 
             {!isUploading && (
               <button
@@ -178,7 +185,8 @@ export function Dropzone({
           <>
             <UploadCloud className="h-7 w-7 text-foreground/40" />
             <p className="text-sm text-foreground/70">
-              Arrastra una imagen aquí o <span className="font-medium text-primary">haz clic para elegir</span>
+              Arrastra una imagen aquí o{' '}
+              <span className="font-medium text-primary">haz clic para elegir</span>
             </p>
           </>
         )}
