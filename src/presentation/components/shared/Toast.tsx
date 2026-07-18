@@ -1,14 +1,7 @@
 'use client';
 
 import type { ToastContentValue } from '@heroui/react';
-import {
-  Toast,
-  ToastContent,
-  ToastDescription,
-  ToastIndicator,
-  ToastQueue,
-  ToastTitle,
-} from '@heroui/react';
+import { Toast, ToastContent, ToastDescription, ToastIndicator, ToastQueue, ToastTitle } from '@heroui/react';
 
 /** Shared queue — toasts can be triggered from anywhere without prop drilling. */
 export const toastQueue = new ToastQueue({ maxVisibleToasts: 4 });
@@ -59,12 +52,8 @@ export function CustomToast({ toast: toastItem }: { toast: any }) {
         <div className="flex items-center gap-2">
           <ToastIndicator className={textClass[variant]} variant={content.variant} />
           <div className="flex flex-col pr-6">
-            {content.title && (
-              <ToastTitle className={textClass[variant]}>{content.title}</ToastTitle>
-            )}
-            {content.description && (
-              <ToastDescription>{content.description}</ToastDescription>
-            )}
+            {content.title && <ToastTitle className={textClass[variant]}>{content.title}</ToastTitle>}
+            {content.description && <ToastDescription>{content.description}</ToastDescription>}
           </div>
         </div>
       </ToastContent>
@@ -92,7 +81,7 @@ export interface ShowToastOptions {
 export function showToast(
   message: string,
   status: 'success' | 'error' = 'success',
-  options?: ShowToastOptions,
+  options?: ShowToastOptions
 ): string {
   const isSuccess = status === 'success';
   return toastQueue.add({

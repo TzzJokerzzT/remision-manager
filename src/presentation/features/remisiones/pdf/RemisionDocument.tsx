@@ -1,4 +1,4 @@
-import { Document, Font, Image, Page, PDFViewer, StyleSheet, Text, View } from '@react-pdf/renderer';
+import { Document, Font, Image, Page, PDFViewer, Text, View } from '@react-pdf/renderer';
 import type { Client } from '@/src/core/domain/entities/Client';
 import type { Company } from '@/src/core/domain/entities/Company';
 import type { Driver } from '@/src/core/domain/entities/Driver';
