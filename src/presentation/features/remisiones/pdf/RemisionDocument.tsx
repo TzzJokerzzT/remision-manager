@@ -43,7 +43,7 @@ export function RemisionDocument({ remision, company, client, driver }: Remision
             {/* Encabezado */}
             <View style={styles.header}>
               <View style={styles.companyInfoContainer}>
-                <Image src={company.logoUrl} style={styles.companyLogo} />
+                {company.logoUrl && <Image src={company.logoUrl} style={styles.companyLogo} />}
                 <View style={styles.companyInfo}>
                   <Text style={styles.title}>{company?.name}</Text>
                   <Text style={styles.subtitle}>NIT {company?.nit}</Text>

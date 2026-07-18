@@ -95,6 +95,10 @@ export const styles = StyleSheet.create({
   },
   tableRowOdd: {
     backgroundColor: '#F9F9FA', // Color ZEBRA
+    flexDirection: 'row',
+    padding: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: '#E4E5E8',
   },
   tableCell: {
     fontSize: 10,

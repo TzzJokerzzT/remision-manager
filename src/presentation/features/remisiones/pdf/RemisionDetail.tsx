@@ -13,6 +13,8 @@ import { useClients } from '@/src/presentation/features/clients/hooks/useClients
 import { useCompanies } from '@/src/presentation/features/companies/hooks/useCompanies';
 import { useDrivers } from '@/src/presentation/features/drivers/hooks/useDrivers';
 import { useRemision } from '../hooks/useRemisiones';
+import type { Company } from '@/src/core/domain/entities/Company';
+import type { Client } from '@/src/core/domain/entities/Client';
 
 // import { RemisionDocument } from './RemisionDocument';
 
@@ -48,8 +50,39 @@ export function RemisionDetail({ remisionId }: RemisionDetailProps) {
   const { data: clients } = useClients(remision?.companyId);
   const { data: drivers } = useDrivers(remision?.companyId);
 
-  const company = useMemo(() => companies?.find((c) => c.id === remision?.companyId), [companies, remision]);
-  const client = useMemo(() => clients?.find((c) => c.id === remision?.clientId), [clients, remision]);
+  const company = useMemo(() => {
+    const foundCompany = companies?.find((c) => c.id === remision?.companyId);
+    if (foundCompany) return foundCompany;
+    return {
+      id: '',
+      name: 'Empresa no encontrada',
+      nit: '',
+      address: '',
+      phone: '',
+      email: '',
+      logoUrl: null,
+      ownerId: '',
+      createdAt: '',
+      updatedAt: '',
+    } as Company;
+  }, [companies, remision]);
+
+  const client = useMemo(() => {
+    const foundClient = clients?.find((c) => c.id === remision?.clientId);
+    if (foundClient) return foundClient;
+    return {
+      id: '',
+      name: 'Cliente no encontrado',
+      documentId: '',
+      phone: '',
+      address: '',
+      companyId: '',
+      ownerId: '',
+      createdAt: '',
+      updatedAt: '',
+    } as Client;
+  }, [clients, remision]);
+
   const driver = useMemo(() => drivers?.find((d) => d.id === remision?.driverId), [drivers, remision]);
 
   if (isLoadingRemision) {

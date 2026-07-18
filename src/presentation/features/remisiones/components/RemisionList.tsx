@@ -86,8 +86,8 @@ export function RemisionList() {
   };
 
   const handleDelete = () => {
-    if (!deletingRemision) return;
-    deleteMutation.mutate(deletingRemision.id, { onSuccess: () => confirmState.close() });
+    if (!deletingRemision?.id) return;
+    deleteMutation.mutate(deletingRemision.id as string, { onSuccess: () => confirmState.close() });
   };
 
   const handleSearchSubmit = () => setAppliedSearch(search.trim());
@@ -184,30 +184,30 @@ export function RemisionList() {
                 }
               >
                 {(remisiones ?? []).map((remision) => {
-                  const client = clientsById.get(remision.clientId);
-                  const driver = driversById.get(remision.driverId);
-                  const isPriced = remision.type === 'priced';
+                  const client = remision.clientId ? clientsById.get(remision.clientId) : undefined;
+                  const driver = remision.driverId ? driversById.get(remision.driverId) : undefined;
+                  const isPriced = remision.type === 'priced' || false;
 
                   return (
                     <Table.Row key={remision.id} id={remision.id}>
-                      <Table.Cell className="text-end text-muted">{remision.consecutive}</Table.Cell>
-                      <Table.Cell className="font-medium">{client?.name ?? '—'}</Table.Cell>
-                      <Table.Cell>{driver?.name ?? '—'}</Table.Cell>
+                      <Table.Cell className="text-end text-muted">{remision.consecutive || '—'}</Table.Cell>
+                      <Table.Cell className="font-medium">{client?.name || '—'}</Table.Cell>
+                      <Table.Cell>{driver?.name || '—'}</Table.Cell>
                       <Table.Cell>
                         <Chip size="sm" variant="soft" color={isPriced ? 'accent' : 'default'}>
                           {isPriced ? 'Con precio + IVA' : 'Solo cantidad'}
                         </Chip>
                       </Table.Cell>
                       <Table.Cell>
-                        <span className="text-muted">{remision.items.length}</span>
-                        {isPriced && typeof remision.total === 'number' && (
+                        <span className="text-muted">{remision.items?.length || 0}</span>
+                        {isPriced && remision.total !== undefined && (
                           <span className="ml-1.5 font-medium">{formatCurrency(remision.total)}</span>
                         )}
                       </Table.Cell>
-                      <Table.Cell>{formatDate(remision.createdAt)}</Table.Cell>
+                      <Table.Cell>{formatDate(remision.createdAt || '')}</Table.Cell>
                       <Table.Cell>
                         <div className="flex items-center justify-end gap-1">
-                          <Link href={`/dashboard/remisiones/${remision.id}`}>
+                          <Link href={`/dashboard/remisiones/${remision.id || ''}`}>
                             <Button isIconOnly size="sm" variant="ghost" aria-label="Ver remisión">
                               <Eye className="size-4" />
                             </Button>
