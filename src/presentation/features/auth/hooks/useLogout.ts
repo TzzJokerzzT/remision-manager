@@ -12,15 +12,15 @@ export function useLogout() {
   const queryClient = useQueryClient();
   const router = useRouter();
 
-  return useMutation({
+  return useMutation<void>({
     mutationFn: () => authUseCases.logout(),
-    onSettled: ({ message }) => {
+    onSettled: () => {
       tokenStorage.clear();
       clear();
       setSelectedCompany(null);
       queryClient.clear();
       router.replace('/login');
-      showToast(message, 'success');
+      showToast('Sesión cerrada con éxito', 'success');
     },
   });
 }
