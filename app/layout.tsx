@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import './globals.css';
+import { Analytics } from '@vercel/analytics/next';
 import { AppProviders } from '@/src/presentation/providers/AppProviders';
 
 export const metadata: Metadata = {
@@ -12,6 +13,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
   return (
     <html lang="es" suppressHydrationWarning className="h-full antialiased">
       <body className="min-h-full bg-background font-sans text-foreground">
+        <Analytics />
         <AppProviders>{children}</AppProviders>
       </body>
     </html>
