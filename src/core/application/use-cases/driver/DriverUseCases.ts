@@ -7,8 +7,8 @@ import type {
 export class DriverUseCases {
   constructor(private readonly driverRepo: IDriverRepository) {}
 
-  list(companyId?: string, search?: string) {
-    return this.driverRepo.list(companyId, search);
+  list(companyId?: string, search?: string, page?: number, limit?: number) {
+    return this.driverRepo.list(companyId, search, page, limit);
   }
 
   getById(id: string) {

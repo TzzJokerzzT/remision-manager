@@ -10,14 +10,16 @@ export function CompanySelector() {
   const { data: companies, isLoading } = useCompanies();
   const { selectedCompany, setSelectedCompany } = useCompanyStore();
 
+  const companyItems = companies?.items ?? [];
+
   // Si la empresa seleccionada fue eliminada o ya no existe, se limpia la selección
   useEffect(() => {
-    if (!companies || !selectedCompany) return;
-    const stillExists = companies.some((c) => c.id === selectedCompany.id);
+    if (companyItems.length === 0 || !selectedCompany) return;
+    const stillExists = companyItems.some((c) => c.id === selectedCompany.id);
     if (!stillExists) setSelectedCompany(null);
-  }, [companies, selectedCompany, setSelectedCompany]);
+  }, [companyItems, selectedCompany, setSelectedCompany]);
 
-  const options = (companies ?? []).map((c) => ({ id: c.id, label: c.name }));
+  const options = companyItems.map((c) => ({ id: c.id, label: c.name }));
 
   return (
     <div className="flex min-w-50 items-center gap-2">
@@ -27,7 +29,7 @@ export function CompanySelector() {
         options={options}
         selectedKey={selectedCompany?.id ?? null}
         onSelectionChange={(key) => {
-          const company = companies?.find((c) => c.id === key) ?? null;
+          const company = companyItems.find((c) => c.id === key) ?? null;
           setSelectedCompany(company);
         }}
         isDisabled={isLoading || options.length === 0}

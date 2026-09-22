@@ -1,6 +1,6 @@
 'use client';
 
-import { Button, Chip, Table, useOverlayState } from '@heroui/react';
+import { Button, Chip, Pagination, Table, useOverlayState } from '@heroui/react';
 import { Pencil, Plus, Search as SearchIcon, Trash2, Truck } from 'lucide-react';
 import { useState } from 'react';
 import type { DriverFormValues } from '@/src/core/application/dtos/driver.dto';
@@ -30,7 +30,8 @@ export function DriverList() {
   const { selectedCompany } = useCompanyStore();
   const [search, setSearch] = useState('');
   const [appliedSearch, setAppliedSearch] = useState('');
-  const { data: drivers, isLoading } = useDrivers(selectedCompany?.id, appliedSearch || undefined);
+  const [page, setPage] = useState(1);
+  const { data: drivers, isLoading } = useDrivers(selectedCompany?.id, appliedSearch || undefined, page);
   const createMutation = useCreateDriver();
   const updateMutation = useUpdateDriver();
   const deleteMutation = useDeleteDriver();
@@ -73,10 +74,14 @@ export function DriverList() {
     deleteMutation.mutate(deletingDriver.id, { onSuccess: () => confirmState.close() });
   };
 
-  const handleSearchSubmit = () => setAppliedSearch(search.trim());
+  const handleSearchSubmit = () => {
+    setPage(1);
+    setAppliedSearch(search.trim());
+  };
   const handleSearchClear = () => {
     setSearch('');
     setAppliedSearch('');
+    setPage(1);
   };
 
   return (
@@ -153,7 +158,7 @@ export function DriverList() {
                   )
                 }
               >
-                {(drivers ?? []).map((driver) => (
+                {(drivers?.items ?? []).map((driver) => (
                   <Table.Row key={driver.id} id={driver.id}>
                     <Table.Cell className="font-medium">{driver.name}</Table.Cell>
                     <Table.Cell>{driver.documentId}</Table.Cell>
@@ -204,6 +209,30 @@ export function DriverList() {
             </Table.Content>
           </Table.ScrollContainer>
         </Table>
+      )}
+
+      {drivers && drivers.totalPages > 1 && (
+        <Pagination className="justify-center" size="sm">
+          <Pagination.Content>
+            <Pagination.Item>
+              <Pagination.Previous isDisabled={page === 1} onPress={() => setPage((p) => p - 1)}>
+                <Pagination.PreviousIcon />
+              </Pagination.Previous>
+            </Pagination.Item>
+            {Array.from({ length: drivers.totalPages }, (_, i) => i + 1).map((p) => (
+              <Pagination.Item key={p}>
+                <Pagination.Link isActive={p === page} onPress={() => setPage(p)}>
+                  {p}
+                </Pagination.Link>
+              </Pagination.Item>
+            ))}
+            <Pagination.Item>
+              <Pagination.Next isDisabled={page === drivers.totalPages} onPress={() => setPage((p) => p + 1)}>
+                <Pagination.NextIcon />
+              </Pagination.Next>
+            </Pagination.Item>
+          </Pagination.Content>
+        </Pagination>
       )}
 
       <FormModal

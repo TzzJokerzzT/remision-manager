@@ -8,10 +8,10 @@ import type {
 import { showToast } from '@/src/presentation/components/shared/Toast';
 import { queryKeys } from '@/src/shared/constants/queryKeys';
 
-export function useClients(companyId?: string, search?: string) {
+export function useClients(companyId?: string, search?: string, page: number = 1, limit: number = 10) {
   return useQuery({
-    queryKey: queryKeys.clients.all(companyId, search),
-    queryFn: () => clientUseCases.list(companyId, search),
+    queryKey: queryKeys.clients.all(companyId, search, page),
+    queryFn: () => clientUseCases.list(companyId, search, page, limit),
   });
 }
 

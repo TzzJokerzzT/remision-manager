@@ -37,7 +37,7 @@ export function DriverForm({
     defaultValues,
   });
 
-  const companyOptions = (companies ?? []).map((c) => ({ id: c.id, label: c.name }));
+  const companyOptions = (companies?.items ?? []).map((c) => ({ id: c.id, label: c.name }));
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">

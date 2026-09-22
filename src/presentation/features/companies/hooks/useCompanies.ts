@@ -9,10 +9,10 @@ import { showToast } from '@/src/presentation/components/shared/Toast';
 import { useCompanyStore } from '@/src/presentation/stores/company.store';
 import { queryKeys } from '@/src/shared/constants/queryKeys';
 
-export function useCompanies(search?: string) {
+export function useCompanies(search?: string, page?: number, limit?: number) {
   return useQuery({
-    queryKey: queryKeys.companies.all(search),
-    queryFn: () => companyUseCases.list(search),
+    queryKey: queryKeys.companies.all(search, page),
+    queryFn: () => companyUseCases.list(search, page, limit),
   });
 }
 

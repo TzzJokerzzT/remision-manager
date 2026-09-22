@@ -2,17 +2,20 @@ import type { Driver } from '../../domain/entities/Driver';
 import type {
   CreateDriverPayload,
   IDriverRepository,
+  PaginatedDriverResponse,
   UpdateDriverPayload,
 } from '../../domain/repositories/IDriverRepository';
 import { httpClient } from '../http/httpClient';
 
 export class DriverRepository implements IDriverRepository {
-  async list(companyId?: string, search?: string) {
-    const params: Record<string, string> = {};
+  async list(companyId?: string, search?: string, page?: number, limit?: number) {
+    const params: Record<string, string | number> = {};
     if (companyId) params.companyId = companyId;
     if (search?.trim()) params.search = search.trim();
+    if (page) params.page = page;
+    if (limit) params.limit = limit;
     const { data } = await httpClient.get('/drivers', { params });
-    return data.data as Driver[];
+    return data.data as PaginatedDriverResponse;
   }
 
   async getById(id: string) {

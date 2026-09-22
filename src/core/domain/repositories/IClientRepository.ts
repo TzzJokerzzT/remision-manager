@@ -1,5 +1,13 @@
 import type { Client } from '../entities/Client';
 
+export interface PaginatedClientResponse {
+  items: Client[];
+  total: number;
+  limit: number;
+  page: number;
+  totalPages: number;
+}
+
 export interface CreateClientPayload {
   name: string;
   documentId: string;
@@ -12,7 +20,7 @@ export interface CreateClientPayload {
 export type UpdateClientPayload = Partial<Omit<CreateClientPayload, 'companyId'>>;
 
 export interface IClientRepository {
-  list(companyId?: string, search?: string): Promise<Client[]>;
+  list(companyId?: string, search?: string, page?: number, limit?: number): Promise<PaginatedClientResponse>;
   getById(id: string): Promise<Client>;
   create(payload: CreateClientPayload): Promise<{ client: Client; message: string }>;
   update(id: string, payload: UpdateClientPayload): Promise<{ client: Client; message: string }>;

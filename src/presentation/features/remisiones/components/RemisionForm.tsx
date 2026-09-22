@@ -71,8 +71,8 @@ export function RemisionForm({
     return { subtotal, ivaValue, total: subtotal + ivaValue };
   }, [isPriced, watchedItems, watchedIva]);
 
-  const clientOptions = (clients ?? []).map((c) => ({ id: c.id, label: c.name }));
-  const driverOptions = (drivers ?? []).map((d) => ({ id: d.id, label: d.name }));
+  const clientOptions = (clients?.items ?? []).map((c) => ({ id: c.id, label: c.name }));
+  const driverOptions = (drivers?.items ?? []).map((d) => ({ id: d.id, label: d.name }));
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-5">

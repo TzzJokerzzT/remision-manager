@@ -1,6 +1,6 @@
 'use client';
 
-import { Avatar, Button, Chip, Table, useOverlayState } from '@heroui/react';
+import { Avatar, Button, Chip, Pagination, Table, useOverlayState } from '@heroui/react';
 import { Building2, Pencil, Plus, Search as SearchIcon, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 import type { CompanyFormValues } from '@/src/core/application/dtos/company.dto';
@@ -19,7 +19,8 @@ export function CompanyManager() {
   const { selectedCompany, setSelectedCompany } = useCompanyStore();
   const [search, setSearch] = useState('');
   const [appliedSearch, setAppliedSearch] = useState('');
-  const { data: companies, isLoading } = useCompanies(appliedSearch || undefined);
+  const [page, setPage] = useState(1);
+  const { data: companies, isLoading } = useCompanies(appliedSearch || undefined, page);
   const createMutation = useCreateCompany();
   const updateMutation = useUpdateCompany();
   const deleteMutation = useDeleteCompany();
@@ -65,8 +66,12 @@ export function CompanyManager() {
     deleteMutation.mutate(companyToDelete.id, { onSuccess: () => confirmModal.close() });
   };
 
-  const handleSearchSubmit = () => setAppliedSearch(search.trim());
+  const handleSearchSubmit = () => {
+    setPage(1);
+    setAppliedSearch(search.trim());
+  };
   const handleSearchClear = () => {
+    setPage(1);
     setSearch('');
     setAppliedSearch('');
   };
@@ -143,7 +148,7 @@ export function CompanyManager() {
                   )
                 }
               >
-                {(companies ?? []).map((company) => {
+                {(companies?.items ?? []).map((company) => {
                   const isSelected = selectedCompany?.id === company.id;
 
                   return (
@@ -206,6 +211,33 @@ export function CompanyManager() {
             </Table.Content>
           </Table.ScrollContainer>
         </Table>
+      )}
+
+      {!isLoading && companies && companies.totalPages > 1 && (
+        <Pagination className="justify-center" size="sm">
+          <Pagination.Content>
+            <Pagination.Item>
+              <Pagination.Previous isDisabled={page === 1} onPress={() => setPage((p) => p - 1)}>
+                <Pagination.PreviousIcon />
+              </Pagination.Previous>
+            </Pagination.Item>
+            {Array.from({ length: companies.totalPages }, (_, i) => i + 1).map((p) => (
+              <Pagination.Item key={p}>
+                <Pagination.Link isActive={p === page} onPress={() => setPage(p)}>
+                  {p}
+                </Pagination.Link>
+              </Pagination.Item>
+            ))}
+            <Pagination.Item>
+              <Pagination.Next
+                isDisabled={page === companies.totalPages}
+                onPress={() => setPage((p) => p + 1)}
+              >
+                <Pagination.NextIcon />
+              </Pagination.Next>
+            </Pagination.Item>
+          </Pagination.Content>
+        </Pagination>
       )}
 
       <FormModal

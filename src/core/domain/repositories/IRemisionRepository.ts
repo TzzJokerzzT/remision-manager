@@ -1,5 +1,13 @@
 import type { Remision, RemisionItem, RemisionType } from '../entities/Remision';
 
+export interface PaginatedRemisionResponse {
+  items: Remision[];
+  total: number;
+  limit: number;
+  page: number;
+  totalPages: number;
+}
+
 export interface CreateRemisionPayload {
   type: RemisionType;
   companyId: string;
@@ -18,8 +26,24 @@ export interface UpdateRemisionPayload {
   driverId?: string;
 }
 
+export interface RemisionFilters {
+  companyId?: string;
+  search?: string;
+  clientName?: string;
+  driverName?: string;
+  type?: string;
+  from?: string;
+  to?: string;
+}
+
 export interface IRemisionRepository {
-  list(companyId?: string, search?: string): Promise<Remision[]>;
+  list(
+    companyId?: string,
+    search?: string,
+    page?: number,
+    limit?: number,
+    filters?: Pick<RemisionFilters, 'clientName' | 'driverName' | 'type' | 'from' | 'to'>
+  ): Promise<PaginatedRemisionResponse>;
   getById(id: string): Promise<Remision>;
   create(payload: CreateRemisionPayload): Promise<{ remision: Remision; message: string }>;
   update(id: string, payload: UpdateRemisionPayload): Promise<{ remision: Remision; message: string }>;

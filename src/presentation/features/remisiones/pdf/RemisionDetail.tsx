@@ -50,7 +50,7 @@ export function RemisionDetail({ remisionId }: RemisionDetailProps) {
   const { data: drivers } = useDrivers(remision?.companyId);
 
   const company = useMemo(() => {
-    const foundCompany = companies?.find((c) => c.id === remision?.companyId);
+    const foundCompany = companies?.items.find((c) => c.id === remision?.companyId);
     if (foundCompany) return foundCompany;
     return {
       id: '',
@@ -67,7 +67,7 @@ export function RemisionDetail({ remisionId }: RemisionDetailProps) {
   }, [companies, remision]);
 
   const client = useMemo(() => {
-    const foundClient = clients?.find((c) => c.id === remision?.clientId);
+    const foundClient = clients?.items.find((c) => c.id === remision?.clientId);
     if (foundClient) return foundClient;
     return {
       id: '',
@@ -82,7 +82,7 @@ export function RemisionDetail({ remisionId }: RemisionDetailProps) {
     } as Client;
   }, [clients, remision]);
 
-  const driver = useMemo(() => drivers?.find((d) => d.id === remision?.driverId), [drivers, remision]);
+  const driver = useMemo(() => drivers?.items?.find((d) => d.id === remision?.driverId), [drivers, remision]);
 
   if (isLoadingRemision) {
     return (

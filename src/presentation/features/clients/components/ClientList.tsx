@@ -1,6 +1,6 @@
 'use client';
 
-import { Button, Table, useOverlayState } from '@heroui/react';
+import { Button, Pagination, Table, useOverlayState } from '@heroui/react';
 import { Pencil, Plus, Search as SearchIcon, Trash2, Users } from 'lucide-react';
 import { useState } from 'react';
 import type { ClientFormValues } from '@/src/core/application/dtos/client.dto';
@@ -30,7 +30,8 @@ export function ClientList() {
   const { selectedCompany } = useCompanyStore();
   const [search, setSearch] = useState('');
   const [appliedSearch, setAppliedSearch] = useState('');
-  const { data: clients, isLoading } = useClients(selectedCompany?.id, appliedSearch || undefined);
+  const [page, setPage] = useState(1);
+  const { data: clients, isLoading } = useClients(selectedCompany?.id, appliedSearch || undefined, page);
   const createMutation = useCreateClient();
   const updateMutation = useUpdateClient();
   const deleteMutation = useDeleteClient();
@@ -73,10 +74,14 @@ export function ClientList() {
     deleteMutation.mutate(deletingClient.id, { onSuccess: () => confirmState.close() });
   };
 
-  const handleSearchSubmit = () => setAppliedSearch(search.trim());
+  const handleSearchSubmit = () => {
+    setPage(1);
+    setAppliedSearch(search.trim());
+  };
   const handleSearchClear = () => {
     setSearch('');
     setAppliedSearch('');
+    setPage(1);
   };
 
   return (
@@ -152,7 +157,7 @@ export function ClientList() {
                   )
                 }
               >
-                {(clients ?? []).map((client) => (
+                {(clients?.items ?? []).map((client) => (
                   <Table.Row key={client.id} id={client.id}>
                     <Table.Cell className="font-medium">{client.name}</Table.Cell>
                     <Table.Cell>{client.documentId}</Table.Cell>
@@ -186,6 +191,38 @@ export function ClientList() {
             </Table.Content>
           </Table.ScrollContainer>
         </Table>
+      )}
+
+      {clients && clients.totalPages > 1 && (
+        <div className="flex flex-col items-center gap-2">
+          <Pagination className="justify-center" size="sm">
+            <Pagination.Content>
+              <Pagination.Item>
+                <Pagination.Previous isDisabled={page === 1} onPress={() => setPage((p) => p - 1)}>
+                  <Pagination.PreviousIcon />
+                </Pagination.Previous>
+              </Pagination.Item>
+              {Array.from({ length: clients.totalPages }, (_, i) => i + 1).map((p) => (
+                <Pagination.Item key={p}>
+                  <Pagination.Link isActive={p === page} onPress={() => setPage(p)}>
+                    {p}
+                  </Pagination.Link>
+                </Pagination.Item>
+              ))}
+              <Pagination.Item>
+                <Pagination.Next
+                  isDisabled={page === clients.totalPages}
+                  onPress={() => setPage((p) => p + 1)}
+                >
+                  <Pagination.NextIcon />
+                </Pagination.Next>
+              </Pagination.Item>
+            </Pagination.Content>
+          </Pagination>
+          <span className="text-xs text-foreground/50">
+            Página {page} de {clients.totalPages} — {clients.total} cliente{clients.total !== 1 ? 's' : ''}
+          </span>
+        </div>
       )}
 
       <FormModal

@@ -2,16 +2,19 @@ import type { Company } from '../../domain/entities/Company';
 import type {
   CreateCompanyPayload,
   ICompanyRepository,
+  PaginatedCompanyResponse,
   UpdateCompanyPayload,
 } from '../../domain/repositories/ICompanyRepository';
 import { httpClient } from '../http/httpClient';
 
 export class CompanyRepository implements ICompanyRepository {
-  async list(search?: string) {
-    const params: Record<string, string> = {};
+  async list(search?: string, page?: number, limit?: number): Promise<PaginatedCompanyResponse> {
+    const params: Record<string, string | number> = {};
     if (search?.trim()) params.search = search.trim();
+    if (page) params.page = page;
+    if (limit) params.limit = limit;
     const { data } = await httpClient.get('/companies', { params });
-    return data.data as Company[];
+    return data.data as PaginatedCompanyResponse;
   }
 
   async getById(id: string) {

@@ -1,14 +1,15 @@
 import type {
   CreateCompanyPayload,
   ICompanyRepository,
+  PaginatedCompanyResponse,
   UpdateCompanyPayload,
 } from '../../../domain/repositories/ICompanyRepository';
 
 export class CompanyUseCases {
   constructor(private readonly companyRepo: ICompanyRepository) {}
 
-  list(search?: string) {
-    return this.companyRepo.list(search);
+  list(search?: string, page?: number, limit?: number): Promise<PaginatedCompanyResponse> {
+    return this.companyRepo.list(search, page, limit);
   }
 
   getById(id: string) {

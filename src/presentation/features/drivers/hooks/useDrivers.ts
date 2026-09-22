@@ -8,10 +8,10 @@ import type {
 import { showToast } from '@/src/presentation/components/shared/Toast';
 import { queryKeys } from '@/src/shared/constants/queryKeys';
 
-export function useDrivers(companyId?: string, search?: string) {
+export function useDrivers(companyId?: string, search?: string, page: number = 1, limit: number = 10) {
   return useQuery({
-    queryKey: queryKeys.drivers.all(companyId, search),
-    queryFn: () => driverUseCases.list(companyId, search),
+    queryKey: queryKeys.drivers.all(companyId, search, page),
+    queryFn: () => driverUseCases.list(companyId, search, page, limit),
   });
 }
 

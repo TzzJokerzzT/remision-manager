@@ -27,10 +27,10 @@ export default function DashboardPage() {
   const { data: remisiones } = useRemisiones(selectedCompany?.id);
 
   const counts = {
-    '/dashboard/remisiones': remisiones?.length ?? 0,
-    '/dashboard/companies': companies?.length ?? 0,
-    '/dashboard/clients': clients?.length ?? 0,
-    '/dashboard/drivers': drivers?.length ?? 0,
+    '/dashboard/remisiones': remisiones?.total ?? 0,
+    '/dashboard/companies': companies?.total ?? 0,
+    '/dashboard/clients': clients?.total ?? 0,
+    '/dashboard/drivers': drivers?.items?.length ?? 0,
   } as Record<string, number>;
 
   return (

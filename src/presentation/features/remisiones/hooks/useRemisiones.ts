@@ -7,10 +7,16 @@ import type {
 import { showToast } from '@/src/presentation/components/shared/Toast';
 import { queryKeys } from '@/src/shared/constants/queryKeys';
 
-export function useRemisiones(companyId?: string, search?: string) {
+export function useRemisiones(
+  companyId?: string,
+  search?: string,
+  page?: number,
+  limit?: number,
+  filters?: { clientName?: string; driverName?: string; type?: string; from?: string; to?: string }
+) {
   return useQuery({
-    queryKey: queryKeys.remisiones.all(companyId, search),
-    queryFn: () => remisionUseCases.list(companyId, search),
+    queryKey: queryKeys.remisiones.all(companyId, search, page, filters),
+    queryFn: () => remisionUseCases.list(companyId, search, page, limit, filters),
     enabled: !!companyId,
   });
 }
