@@ -1,9 +1,26 @@
 'use client';
 
-import { Button, Chip, Table, useOverlayState } from '@heroui/react';
-import { Eye, FileText, Pencil, Plus, Search as SearchIcon, Trash2 } from 'lucide-react';
+import type { Key } from '@heroui/react';
+
+import {
+  Autocomplete,
+  Button,
+  Chip,
+  DateField,
+  DateRangePicker,
+  Label,
+  ListBox,
+  Pagination,
+  RangeCalendar,
+  SearchField,
+  Table,
+  useFilter,
+  useOverlayState,
+} from '@heroui/react';
+import { CalendarDate } from '@internationalized/date';
+import { Eye, FileText, Pencil, Plus, Search as SearchIcon, Trash2, X } from 'lucide-react';
 import Link from 'next/link';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import type { RemisionFormValues } from '@/src/core/application/dtos/remision.dto';
 import type { Remision } from '@/src/core/domain/entities/Remision';
 import { EmptyState } from '@/src/presentation/components/shared/EmptyState';
@@ -44,9 +61,42 @@ export function RemisionList() {
   const { selectedCompany } = useCompanyStore();
   const [search, setSearch] = useState('');
   const [appliedSearch, setAppliedSearch] = useState('');
-  const { data: remisiones, isLoading } = useRemisiones(selectedCompany?.id, appliedSearch || undefined);
+  const [page, setPage] = useState(1);
+  const limit = 10;
+
+  // Filter state
+  const [clientFilter, setClientFilter] = useState<Key | null>(null);
+  const [driverFilter, setDriverFilter] = useState<Key | null>(null);
+  const [typeFilter, setTypeFilter] = useState<Key | null>(null);
+  const [dateRange, setDateRange] = useState<{ start: CalendarDate; end: CalendarDate } | null>(null);
+
+  const appliedFilters = useMemo(
+    () => ({
+      clientName: clientFilter != null ? String(clientFilter) : undefined,
+      driverName: driverFilter != null ? String(driverFilter) : undefined,
+      type: typeFilter != null ? String(typeFilter) : undefined,
+      from: dateRange?.start?.toString(),
+      to: dateRange?.end?.toString(),
+    }),
+    [clientFilter, driverFilter, typeFilter, dateRange]
+  );
+
+  const { data: paginatedData, isLoading } = useRemisiones(
+    selectedCompany?.id,
+    appliedSearch || undefined,
+    page,
+    limit,
+    appliedFilters
+  );
+  const remisiones = paginatedData?.items ?? [];
+  const totalPages = paginatedData?.totalPages ?? 1;
+  const total = paginatedData?.total ?? 0;
+
   const { data: clients } = useClients(selectedCompany?.id);
   const { data: drivers } = useDrivers(selectedCompany?.id);
+
+  const clientsList = clients?.items ?? [];
+  const driversList = drivers?.items ?? [];
 
   const createMutation = useCreateRemision();
   const updateMutation = useUpdateRemision();
@@ -90,14 +140,35 @@ export function RemisionList() {
     deleteMutation.mutate(deletingRemision.id as string, { onSuccess: () => confirmState.close() });
   };
 
-  const handleSearchSubmit = () => setAppliedSearch(search.trim());
+  const handleSearchSubmit = () => {
+    setAppliedSearch(search.trim());
+    setPage(1);
+  };
   const handleSearchClear = () => {
     setSearch('');
     setAppliedSearch('');
+    setPage(1);
   };
+  const clearFilters = () => {
+    setClientFilter(null);
+    setDriverFilter(null);
+    setTypeFilter(null);
+    setDateRange(null);
+    setPage(1);
+  };
+  const hasActiveFilters =
+    clientFilter != null || driverFilter != null || typeFilter != null || dateRange != null;
 
-  const clientsById = new Map((clients ?? []).map((c) => [c.id, c]));
-  const driversById = new Map((drivers ?? []).map((d) => [d.id, d]));
+  const typeOptions = [
+    { id: 'priced', name: 'Con precio + IVA' },
+    { id: 'quantity_only', name: 'Solo cantidad' },
+  ];
+
+  // Filter function for Autocomplete.Filter
+  const { contains } = useFilter({ sensitivity: 'base' });
+
+  const clientsById = new Map((clients?.items ?? []).map((c) => [c.id, c]));
+  const driversById = new Map((drivers?.items ?? []).map((d) => [d.id, d]));
 
   if (!selectedCompany) {
     return (
@@ -135,6 +206,179 @@ export function RemisionList() {
         placeholder="Buscar remisiones..."
       />
 
+      {/* Autocomplete filters */}
+      <div className="flex flex-wrap items-end gap-3">
+        <Autocomplete
+          selectionMode="single"
+          value={clientFilter}
+          onSelectionChange={(key) => {
+            setClientFilter(key);
+            setPage(1);
+          }}
+          className="w-full min-w-[200px] max-w-[280px]"
+        >
+          <Label>Filtrar por cliente</Label>
+          <Autocomplete.Trigger>
+            <Autocomplete.Value />
+            <Autocomplete.ClearButton />
+            <Autocomplete.Indicator />
+          </Autocomplete.Trigger>
+          <Autocomplete.Popover>
+            <Autocomplete.Filter filter={contains}>
+              <SearchField aria-label="Buscar cliente" name="clientSearch" variant="secondary">
+                <SearchField.Group>
+                  <SearchField.SearchIcon />
+                  <SearchField.Input placeholder="Buscar cliente..." />
+                  <SearchField.ClearButton />
+                </SearchField.Group>
+              </SearchField>
+              <ListBox
+                renderEmptyState={() => (
+                  <p className="px-2 py-1 text-sm text-foreground/50">Sin resultados</p>
+                )}
+              >
+                {clientsList.map((client) => (
+                  <ListBox.Item key={client.id} id={client.name} textValue={client.name}>
+                    {client.name}
+                    <ListBox.ItemIndicator />
+                  </ListBox.Item>
+                ))}
+              </ListBox>
+            </Autocomplete.Filter>
+          </Autocomplete.Popover>
+        </Autocomplete>
+
+        <Autocomplete
+          selectionMode="single"
+          value={driverFilter}
+          onSelectionChange={(key) => {
+            setDriverFilter(key);
+            setPage(1);
+          }}
+          className="w-full min-w-[200px] max-w-[280px]"
+        >
+          <Label>Filtrar por conductor</Label>
+          <Autocomplete.Trigger>
+            <Autocomplete.Value />
+            <Autocomplete.ClearButton />
+            <Autocomplete.Indicator />
+          </Autocomplete.Trigger>
+          <Autocomplete.Popover>
+            <Autocomplete.Filter filter={contains}>
+              <SearchField aria-label="Buscar conductor" name="driverSearch" variant="secondary">
+                <SearchField.Group>
+                  <SearchField.SearchIcon />
+                  <SearchField.Input placeholder="Buscar conductor..." />
+                  <SearchField.ClearButton />
+                </SearchField.Group>
+              </SearchField>
+              <ListBox
+                renderEmptyState={() => (
+                  <p className="px-2 py-1 text-sm text-foreground/50">Sin resultados</p>
+                )}
+              >
+                {driversList.map((driver) => (
+                  <ListBox.Item key={driver.id} id={driver.name} textValue={driver.name}>
+                    {driver.name}
+                    <ListBox.ItemIndicator />
+                  </ListBox.Item>
+                ))}
+              </ListBox>
+            </Autocomplete.Filter>
+          </Autocomplete.Popover>
+        </Autocomplete>
+
+        <Autocomplete
+          selectionMode="single"
+          value={typeFilter}
+          onSelectionChange={(key) => {
+            setTypeFilter(key);
+            setPage(1);
+          }}
+          className="w-full min-w-[200px] max-w-[280px]"
+        >
+          <Label>Filtrar por tipo</Label>
+          <Autocomplete.Trigger>
+            <Autocomplete.Value />
+            <Autocomplete.ClearButton />
+            <Autocomplete.Indicator />
+          </Autocomplete.Trigger>
+          <Autocomplete.Popover>
+            <Autocomplete.Filter filter={contains}>
+              <SearchField aria-label="Buscar tipo" name="typeSearch" variant="secondary">
+                <SearchField.Group>
+                  <SearchField.SearchIcon />
+                  <SearchField.Input placeholder="Buscar tipo..." />
+                  <SearchField.ClearButton />
+                </SearchField.Group>
+              </SearchField>
+              <ListBox
+                renderEmptyState={() => (
+                  <p className="px-2 py-1 text-sm text-foreground/50">Sin resultados</p>
+                )}
+              >
+                {typeOptions.map((opt) => (
+                  <ListBox.Item key={opt.id} id={opt.id} textValue={opt.name}>
+                    {opt.name}
+                    <ListBox.ItemIndicator />
+                  </ListBox.Item>
+                ))}
+              </ListBox>
+            </Autocomplete.Filter>
+          </Autocomplete.Popover>
+        </Autocomplete>
+
+        <DateRangePicker
+          value={dateRange}
+          onChange={(range) => {
+            setDateRange(range);
+            setPage(1);
+          }}
+          className="w-full min-w-[260px] max-w-[340px]"
+        >
+          <Label>Filtrar por fechas</Label>
+          <DateField.Group>
+            <DateField.InputContainer>
+              <DateField.Input slot="start">
+                {(segment) => <DateField.Segment segment={segment} />}
+              </DateField.Input>
+              <DateRangePicker.RangeSeparator />
+              <DateField.Input slot="end">
+                {(segment) => <DateField.Segment segment={segment} />}
+              </DateField.Input>
+            </DateField.InputContainer>
+            <DateField.Suffix>
+              <DateRangePicker.Trigger>
+                <DateRangePicker.TriggerIndicator />
+              </DateRangePicker.Trigger>
+            </DateField.Suffix>
+          </DateField.Group>
+          <DateRangePicker.Popover>
+            <RangeCalendar aria-label="Seleccionar rango de fechas">
+              <RangeCalendar.Header>
+                <RangeCalendar.NavButton slot="previous" />
+                <RangeCalendar.Heading />
+                <RangeCalendar.NavButton slot="next" />
+              </RangeCalendar.Header>
+              <RangeCalendar.Grid>
+                <RangeCalendar.GridHeader>
+                  {(day) => <RangeCalendar.HeaderCell>{day}</RangeCalendar.HeaderCell>}
+                </RangeCalendar.GridHeader>
+                <RangeCalendar.GridBody>
+                  {(date) => <RangeCalendar.Cell date={date} />}
+                </RangeCalendar.GridBody>
+              </RangeCalendar.Grid>
+            </RangeCalendar>
+          </DateRangePicker.Popover>
+        </DateRangePicker>
+
+        {hasActiveFilters && (
+          <Button variant="ghost" size="sm" onPress={clearFilters} className="gap-1">
+            <X className="size-3.5" /> Limpiar filtros
+          </Button>
+        )}
+      </div>
+
       {isLoading ? (
         <div className="flex justify-center py-16">
           <Spinner />
@@ -154,14 +398,21 @@ export function RemisionList() {
               </Table.Header>
               <Table.Body
                 renderEmptyState={() =>
-                  appliedSearch ? (
+                  appliedSearch || hasActiveFilters ? (
                     <EmptyState
                       icon={SearchIcon}
                       title="Sin resultados"
-                      description={`No se encontraron remisiones que coincidan con "${appliedSearch}".`}
+                      description={`No se encontraron remisiones con los filtros aplicados.`}
                       action={
-                        <Button onPress={handleSearchClear} variant="outline" className="mt-2 gap-2">
-                          Limpiar busqueda
+                        <Button
+                          onPress={() => {
+                            handleSearchClear();
+                            clearFilters();
+                          }}
+                          variant="outline"
+                          className="mt-2 gap-2"
+                        >
+                          Limpiar filtros
                         </Button>
                       }
                     />
@@ -239,6 +490,35 @@ export function RemisionList() {
             </Table.Content>
           </Table.ScrollContainer>
         </Table>
+      )}
+
+      {totalPages > 1 && (
+        <div className="flex flex-col items-center gap-2">
+          <Pagination className="justify-center" size="sm">
+            <Pagination.Content>
+              <Pagination.Item>
+                <Pagination.Previous isDisabled={page === 1} onPress={() => setPage((p) => p - 1)}>
+                  <Pagination.PreviousIcon />
+                </Pagination.Previous>
+              </Pagination.Item>
+              {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
+                <Pagination.Item key={p}>
+                  <Pagination.Link isActive={p === page} onPress={() => setPage(p)}>
+                    {p}
+                  </Pagination.Link>
+                </Pagination.Item>
+              ))}
+              <Pagination.Item>
+                <Pagination.Next isDisabled={page === totalPages} onPress={() => setPage((p) => p + 1)}>
+                  <Pagination.NextIcon />
+                </Pagination.Next>
+              </Pagination.Item>
+            </Pagination.Content>
+          </Pagination>
+          <span className="text-xs text-foreground/50">
+            Página {page} de {totalPages} — {total} remisión{total !== 1 ? 'es' : ''}
+          </span>
+        </div>
       )}
 
       <FormModal
