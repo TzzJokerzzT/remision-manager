@@ -4,9 +4,12 @@ import { Button } from '@heroui/react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { type LoginFormValues, loginSchema } from '@/src/core/application/dtos/auth.dto';
 import { FormField } from '@/src/presentation/components/ui/FormField';
+import { useAuthStore } from '@/src/presentation/stores/auth.store';
 import { getErrorMessage } from '@/src/shared/utils/getErrorMessage';
 import { useLogin } from '../hooks/useLogin';
 
@@ -18,6 +21,16 @@ export function LoginForm() {
   } = useForm<LoginFormValues>({ resolver: zodResolver(loginSchema) });
 
   const loginMutation = useLogin();
+  const { isAuthenticated, user } = useAuthStore();
+  const router = useRouter();
+
+  // Una sesión ya iniciada no tiene nada que hacer en el formulario de acceso.
+  // También cubre las sesiones previas a la pista de sesión, que llegan acá una vez.
+  useEffect(() => {
+    if (isAuthenticated && user) {
+      router.replace('/dashboard');
+    }
+  }, [isAuthenticated, user, router]);
 
   const onSubmit = (values: LoginFormValues) => {
     loginMutation.mutate(values);
