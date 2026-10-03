@@ -6,6 +6,10 @@ import { Building2, Mail, Pencil, Phone, Trash2 } from 'lucide-react';
 import type { Company } from '@/src/core/domain/entities/Company';
 import { listItemVariants } from '@/src/presentation/components/shared/AnimatedList';
 import { useCompanyStore } from '@/src/presentation/stores/company.store';
+import { cloudinaryImageUrl } from '@/src/shared/utils/cloudinary';
+
+// El avatar se muestra a 44px (h-11): 96px cubre pantallas 2x sin traer el original.
+const AVATAR_IMAGE = { width: 96, height: 96, crop: 'fill' } as const;
 
 interface CompanyCardProps {
   company: Company;
@@ -29,7 +33,7 @@ export function CompanyCard({ company, onEdit, onDelete }: CompanyCardProps) {
       <div className="flex items-start justify-between gap-3">
         <div className="flex items-center gap-3">
           <Avatar className="h-11 w-11 shrink-0">
-            <Avatar.Image src={company.logoUrl ?? undefined} alt={company.name} />
+            <Avatar.Image src={cloudinaryImageUrl(company.logoUrl, AVATAR_IMAGE)} alt={company.name} />
             <Avatar.Fallback>
               <Building2 className="h-5 w-5" />
             </Avatar.Fallback>

@@ -3,6 +3,7 @@ import type { Client } from '@/src/core/domain/entities/Client';
 import type { Company } from '@/src/core/domain/entities/Company';
 import type { Driver } from '@/src/core/domain/entities/Driver';
 import type { Remision } from '@/src/core/domain/entities/Remision';
+import { cloudinaryImageUrl } from '@/src/shared/utils/cloudinary';
 import { styles } from './styles';
 
 // Registrar fuentes (opcional, puedes ajustar según tus necesidades)
@@ -16,6 +17,9 @@ Font.register({
     },
   ],
 });
+
+// El logo se imprime a 5rem (80px): 256px da margen de sobra para impresión.
+const PDF_LOGO = { width: 256 } as const;
 
 interface RemisionDocumentProps {
   remision: Remision;
@@ -43,7 +47,9 @@ export function RemisionDocument({ remision, company, client, driver }: Remision
             {/* Encabezado */}
             <View style={styles.header}>
               <View style={styles.companyInfoContainer}>
-                {company.logoUrl && <Image src={company.logoUrl} style={styles.companyLogo} />}
+                {company.logoUrl && (
+                  <Image src={cloudinaryImageUrl(company.logoUrl, PDF_LOGO)} style={styles.companyLogo} />
+                )}
                 <View style={styles.companyInfo}>
                   <Text style={styles.title}>{company?.name}</Text>
                   <Text style={styles.subtitle}>NIT {company?.nit}</Text>

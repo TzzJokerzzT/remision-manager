@@ -12,8 +12,12 @@ import { Spinner } from '@/src/presentation/components/shared/Spinner';
 import { ConfirmDialog } from '@/src/presentation/components/ui/ConfirmDialog';
 import { FormModal } from '@/src/presentation/components/ui/FormModal';
 import { useCompanyStore } from '@/src/presentation/stores/company.store';
+import { cloudinaryImageUrl } from '@/src/shared/utils/cloudinary';
 import { useCompanies, useCreateCompany, useDeleteCompany, useUpdateCompany } from '../hooks/useCompanies';
 import { CompanyForm } from './CompanyForm';
+
+// El avatar de la tabla se muestra a ~32px: 64px cubre pantallas 2x.
+const AVATAR_IMAGE = { width: 64, height: 64, crop: 'fill' } as const;
 
 export function CompanyManager() {
   const { selectedCompany, setSelectedCompany } = useCompanyStore();
@@ -155,7 +159,10 @@ export function CompanyManager() {
                     <Table.Row key={company.id} id={company.id}>
                       <Table.Cell>
                         <Avatar size="sm">
-                          <Avatar.Image src={company.logoUrl ?? undefined} alt={company.name} />
+                          <Avatar.Image
+                            src={cloudinaryImageUrl(company.logoUrl, AVATAR_IMAGE)}
+                            alt={company.name}
+                          />
                           <Avatar.Fallback>
                             <Building2 className="size-4" />
                           </Avatar.Fallback>
