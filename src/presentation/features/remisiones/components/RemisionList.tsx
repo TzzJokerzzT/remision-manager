@@ -33,6 +33,7 @@ import { useClients } from '@/src/presentation/features/clients/hooks/useClients
 import { useDrivers } from '@/src/presentation/features/drivers/hooks/useDrivers';
 import { formatCurrency, formatDate } from '@/src/presentation/lib/utils';
 import { useCompanyStore } from '@/src/presentation/stores/company.store';
+import { withInferredItemIva } from '@/src/shared/utils/remisionIva';
 import {
   useCreateRemision,
   useDeleteRemision,
@@ -43,6 +44,8 @@ import { typeOptionsRemisionList } from '../utils/constant';
 import { RemisionForm } from './RemisionForm';
 
 function cleanPayload(values: RemisionFormValues) {
+  const isPriced = values.type === 'priced';
+
   return {
     type: values.type,
     documentType: values.documentType,
@@ -52,10 +55,13 @@ function cleanPayload(values: RemisionFormValues) {
     items: values.items.map((item) => ({
       description: item.description,
       quantity: item.quantity,
-      unitPrice: values.type === 'priced' ? item.unitPrice : undefined,
+      unitPrice: isPriced ? item.unitPrice : undefined,
+      // El IVA es por producto. En quantity_only el DTO del backend igual exige `hasIva`, y
+      // con true exigiría una tasa > 0 que en ese tipo no aplica: va en false y sin tasa.
+      hasIva: isPriced ? item.hasIva === true : false,
+      ivaPercentage: isPriced && item.hasIva === true ? item.ivaPercentage : undefined,
     })),
-    ivaPercentage: values.type === 'priced' ? values.ivaPercentage : undefined,
-    hasRetencion: values.type === 'priced' ? values.hasRetencion : false,
+    hasRetencion: isPriced ? values.hasRetencion : false,
     retencionPercentage: values.retencionPercentage,
     notes: values.notes || undefined,
   };
@@ -538,8 +544,13 @@ export function RemisionList() {
                   companyId: editingRemision.companyId,
                   clientId: editingRemision.clientId,
                   driverId: editingRemision.driverId,
-                  items: editingRemision.items,
-                  ivaPercentage: editingRemision.ivaPercentage ?? 19,
+                  // Los ítems guardados antes del IVA por producto no traen `hasIva`, y el backend
+                  // los rechaza al editar. Se infiere la tasa de la remisión vieja para no
+                  // cambiar sus totales en silencio.
+                  items: withInferredItemIva(editingRemision.items, {
+                    subtotal: editingRemision.subtotal,
+                    ivaValue: editingRemision.ivaValue,
+                  }),
                   hasRetencion: editingRemision.hasRetencion,
                   retencionPercentage: editingRemision.retencionPercentage ?? undefined,
                   notes: editingRemision.notes ?? '',

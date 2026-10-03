@@ -87,8 +87,8 @@ const remision: Remision = {
   companyId: 'company-1',
   clientId: 'client-1',
   driverId: 'driver-1',
+  // Ítem legacy a propósito: guardado antes del IVA por producto, sin `hasIva`.
   items: [{ description: 'Cemento', quantity: 2, unitPrice: 50 }],
-  ivaPercentage: 19,
   hasRetencion: false,
   retencionPercentage: 10,
   total: 119,
@@ -154,6 +154,9 @@ describe('RemisionList', () => {
       retencionPercentage: 10,
     });
     expect(payload).not.toHaveProperty('companyId');
+    // Ítem legacy (sin `hasIva`) → inferido exento; no debe llevar tasa.
+    expect(payload.items[0]).toMatchObject({ hasIva: false });
+    expect(payload.items[0].ivaPercentage).toBeUndefined();
     expect(createMutate).not.toHaveBeenCalled();
   });
 
@@ -188,6 +191,9 @@ describe('RemisionList', () => {
       clientId: 'client-1',
       items: [{ description: 'Cemento', quantity: 2, unitPrice: 50 }],
     });
+    // Ítem nuevo: gravado por defecto, lleva su tasa por ítem.
+    expect(payload.items[0]).toMatchObject({ hasIva: true, ivaPercentage: 19 });
+    expect(typeof payload.items[0].hasIva).toBe('boolean');
     expect(updateMutate).not.toHaveBeenCalled();
   });
 
