@@ -27,6 +27,7 @@ function formatDate(value: string) {
 
 export function RemisionCard({ remision, client, driver, onEdit, onDelete }: RemisionCardProps) {
   const isPriced = remision.type === 'priced';
+  const documentLabel = remision.documentType === 'orden_compra' ? 'Orden de compra' : 'Remisión';
 
   return (
     <motion.div
@@ -38,7 +39,7 @@ export function RemisionCard({ remision, client, driver, onEdit, onDelete }: Rem
       <div className="flex items-start justify-between gap-2">
         <div>
           <p className="text-xs font-medium uppercase tracking-wide text-foreground/40">
-            Remisión #{remision.consecutive}
+            {`${documentLabel} #${remision.consecutive}`}
           </p>
           <h3 className="mt-0.5 font-medium text-foreground">{client?.name ?? 'Cliente'}</h3>
         </div>
@@ -66,6 +67,9 @@ export function RemisionCard({ remision, client, driver, onEdit, onDelete }: Rem
         {remision.items.length} ítem{remision.items.length !== 1 ? 's' : ''}
         {isPriced && typeof remision.total === 'number' && (
           <span className="ml-1 font-semibold text-foreground">· {formatCurrency(remision.total)}</span>
+        )}
+        {isPriced && remision.hasRetencion && typeof remision.retencionValue === 'number' && (
+          <span className="ml-1">· Retención {formatCurrency(remision.retencionValue)}</span>
         )}
       </div>
 
