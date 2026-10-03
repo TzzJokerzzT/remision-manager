@@ -97,7 +97,7 @@ export function Dropzone({
     event.target.value = '';
   };
 
-  const onDrop = (event: DragEvent<HTMLDivElement>) => {
+  const onDrop = (event: DragEvent<HTMLFieldSetElement>) => {
     event.preventDefault();
     setIsDragging(false);
     if (disabled || isUploading) return;
@@ -105,8 +105,7 @@ export function Dropzone({
     if (file) handleFile(file);
   };
 
-  const onRemove = (event: React.MouseEvent) => {
-    event.stopPropagation();
+  const onRemove = () => {
     setPreviewUrl(null);
     setLocalError(null);
     onChange(null);
@@ -120,16 +119,10 @@ export function Dropzone({
         </label>
       )}
 
-      <div
-        role="button"
-        tabIndex={disabled ? -1 : 0}
-        onClick={openFileDialog}
-        onKeyDown={(event) => {
-          if (event.key === 'Enter' || event.key === ' ') {
-            event.preventDefault();
-            openFileDialog();
-          }
-        }}
+      {/* Zona de arrastre: un contenedor sin rol interactivo. El disparador real es un
+          <button>, porque un botón no puede contener el <input type="file"> ni el botón de
+          quitar (contenido interactivo anidado). */}
+      <fieldset
         onDragOver={(event) => {
           event.preventDefault();
           if (!disabled && !isUploading) setIsDragging(true);
@@ -137,10 +130,10 @@ export function Dropzone({
         onDragLeave={() => setIsDragging(false)}
         onDrop={onDrop}
         className={[
-          'relative flex min-h-36 cursor-pointer flex-col items-center justify-center gap-2 overflow-hidden rounded-2xl border-2 border-dashed p-4 text-center transition-colors',
+          'relative m-0 flex min-h-36 min-w-0 flex-col items-center justify-center gap-2 overflow-hidden rounded-2xl border-2 border-dashed p-4 text-center transition-colors',
           isDragging ? 'border-primary bg-primary/5' : 'border-default-200 bg-default-50',
           errorMessage ? 'border-danger/60' : '',
-          disabled ? 'cursor-not-allowed opacity-60' : '',
+          disabled ? 'opacity-60' : '',
         ].join(' ')}
       >
         <input
@@ -155,14 +148,22 @@ export function Dropzone({
 
         {displayUrl ? (
           <div className="relative">
-            {/* eslint-disable-next-line @next/next/no-img-element -- preview de blob: y de Cloudinary, no requiere optimización de next/image */}
-            <Image
-              width={200}
-              height={200}
-              src={displayUrl}
-              alt="Vista previa"
-              className="h-24 w-24 rounded-xl object-cover"
-            />
+            <button
+              type="button"
+              onClick={openFileDialog}
+              disabled={disabled || isUploading}
+              aria-label="Cambiar imagen"
+              className="cursor-pointer rounded-xl disabled:cursor-not-allowed"
+            >
+              {/* eslint-disable-next-line @next/next/no-img-element -- preview de blob: y de Cloudinary, no requiere optimización de next/image */}
+              <Image
+                width={200}
+                height={200}
+                src={displayUrl}
+                alt="Vista previa"
+                className="h-24 w-24 rounded-xl object-cover"
+              />
+            </button>
 
             {!isUploading && (
               <button
@@ -182,13 +183,18 @@ export function Dropzone({
             )}
           </div>
         ) : (
-          <>
+          <button
+            type="button"
+            onClick={openFileDialog}
+            disabled={disabled || isUploading}
+            className="flex cursor-pointer flex-col items-center justify-center gap-2 disabled:cursor-not-allowed"
+          >
             <UploadCloud className="h-7 w-7 text-foreground/40" />
-            <p className="text-sm text-foreground/70">
+            <span className="text-sm text-foreground/70">
               Arrastra una imagen aquí o{' '}
               <span className="font-medium text-primary">haz clic para elegir</span>
-            </p>
-          </>
+            </span>
+          </button>
         )}
 
         {isUploading && (
@@ -197,7 +203,7 @@ export function Dropzone({
             style={{ width: `${progress}%` }}
           />
         )}
-      </div>
+      </fieldset>
 
       {helperText && !errorMessage && <p className="text-xs text-foreground/50">{helperText}</p>}
       {errorMessage && (
