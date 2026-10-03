@@ -114,6 +114,10 @@ export const styles = StyleSheet.create({
     width: '20%',
     textAlign: 'right',
   },
+  tableCellIva: {
+    width: '10%',
+    textAlign: 'right',
+  },
   tableCellTotal: {
     width: '15%',
     textAlign: 'right',
