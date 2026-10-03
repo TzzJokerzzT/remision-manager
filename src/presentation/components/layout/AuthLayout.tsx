@@ -1,6 +1,6 @@
 'use client';
 
-import { motion } from 'framer-motion';
+import { m } from 'framer-motion';
 import { FileText } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { type ReactNode, useEffect } from 'react';
@@ -29,7 +29,7 @@ export function AuthLayout({
         <ThemeToggle />
       </div>
 
-      <motion.div
+      <m.div
         initial={{ opacity: 0, y: 16 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.35 }}
@@ -43,7 +43,7 @@ export function AuthLayout({
           <p className="text-sm text-foreground/60">{subtitle}</p>
         </div>
         {children}
-      </motion.div>
+      </m.div>
     </div>
   );
 }

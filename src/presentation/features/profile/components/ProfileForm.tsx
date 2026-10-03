@@ -2,7 +2,7 @@
 
 import { Avatar, Button, Chip } from '@heroui/react';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { motion } from 'framer-motion';
+import { m } from 'framer-motion';
 import { UserRound } from 'lucide-react';
 import { Controller, useForm } from 'react-hook-form';
 import { type ProfileFormValues, profileSchema } from '@/src/core/application/dtos/profile.dto';
@@ -42,7 +42,7 @@ export function ProfileForm() {
   if (!user) return null;
 
   return (
-    <motion.div
+    <m.div
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3 }}
@@ -101,6 +101,6 @@ export function ProfileForm() {
           {updateProfile.isPending ? 'Guardando...' : 'Guardar cambios'}
         </Button>
       </form>
-    </motion.div>
+    </m.div>
   );
 }

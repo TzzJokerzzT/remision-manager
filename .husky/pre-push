@@ -1,0 +1,7 @@
+# Gate de push, en el orden pedido y cortando al primer fallo:
+# typecheck -> linter -> build.
+set -e
+
+bun run typecheck
+bun run check
+bun run build

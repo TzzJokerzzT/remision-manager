@@ -1,7 +1,7 @@
 'use client';
 
 import { Avatar, Button, Chip } from '@heroui/react';
-import { motion } from 'framer-motion';
+import { m } from 'framer-motion';
 import { IdCard, Pencil, Phone, Trash2, Truck } from 'lucide-react';
 import type { Driver } from '@/src/core/domain/entities/Driver';
 import { listItemVariants } from '@/src/presentation/components/shared/AnimatedList';
@@ -14,7 +14,7 @@ interface DriverCardProps {
 
 export function DriverCard({ driver, onEdit, onDelete }: DriverCardProps) {
   return (
-    <motion.div
+    <m.div
       layout
       variants={listItemVariants}
       exit={{ opacity: 0, scale: 0.96 }}
@@ -66,6 +66,6 @@ export function DriverCard({ driver, onEdit, onDelete }: DriverCardProps) {
           <Trash2 className="h-4 w-4" />
         </Button>
       </div>
-    </motion.div>
+    </m.div>
   );
 }

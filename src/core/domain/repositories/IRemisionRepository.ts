@@ -15,7 +15,6 @@ export interface CreateRemisionPayload {
   clientId: string;
   driverId?: string;
   items: RemisionItem[];
-  ivaPercentage?: number;
   hasRetencion: boolean;
   retencionPercentage?: number;
   notes?: string;
@@ -25,7 +24,6 @@ export interface UpdateRemisionPayload {
   type?: RemisionType;
   documentType?: DocumentType;
   items?: RemisionItem[];
-  ivaPercentage?: number;
   hasRetencion?: boolean;
   retencionPercentage?: number;
   notes?: string;

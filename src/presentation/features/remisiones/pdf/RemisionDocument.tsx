@@ -3,6 +3,8 @@ import type { Client } from '@/src/core/domain/entities/Client';
 import type { Company } from '@/src/core/domain/entities/Company';
 import type { Driver } from '@/src/core/domain/entities/Driver';
 import type { Remision } from '@/src/core/domain/entities/Remision';
+import { cloudinaryImageUrl } from '@/src/shared/utils/cloudinary';
+import { withInferredItemIva } from '@/src/shared/utils/remisionIva';
 import { styles } from './styles';
 
 // Registrar fuentes (opcional, puedes ajustar según tus necesidades)
@@ -17,6 +19,9 @@ Font.register({
   ],
 });
 
+// El logo se imprime a 5rem (80px): 256px da margen de sobra para impresión.
+const PDF_LOGO = { width: 256 } as const;
+
 interface RemisionDocumentProps {
   remision: Remision;
   company: Company;
@@ -26,6 +31,12 @@ interface RemisionDocumentProps {
 
 export function RemisionDocument({ remision, company, client, driver }: RemisionDocumentProps) {
   const isPriced = remision?.type === 'priced';
+
+  // Completa hasIva/ivaValue en remisiones guardadas antes del IVA por producto.
+  const items = withInferredItemIva(remision.items, {
+    subtotal: remision.subtotal,
+    ivaValue: remision.ivaValue,
+  });
 
   const formatCurrency = (value: number) => {
     return `$ ${value.toLocaleString('es-CO', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`;
@@ -43,7 +54,9 @@ export function RemisionDocument({ remision, company, client, driver }: Remision
             {/* Encabezado */}
             <View style={styles.header}>
               <View style={styles.companyInfoContainer}>
-                {company.logoUrl && <Image src={company.logoUrl} style={styles.companyLogo} />}
+                {company.logoUrl && (
+                  <Image src={cloudinaryImageUrl(company.logoUrl, PDF_LOGO)} style={styles.companyLogo} />
+                )}
                 <View style={styles.companyInfo}>
                   <Text style={styles.title}>{company?.name}</Text>
                   <Text style={styles.subtitle}>NIT {company?.nit}</Text>
@@ -99,11 +112,12 @@ export function RemisionDocument({ remision, company, client, driver }: Remision
                 {isPriced && (
                   <>
                     <Text style={[styles.tableHeaderText, styles.tableCellPrice]}>PRECIO UNIT.</Text>
+                    <Text style={[styles.tableHeaderText, styles.tableCellIva]}>IVA</Text>
                     <Text style={[styles.tableHeaderText, styles.tableCellTotal]}>TOTAL</Text>
                   </>
                 )}
               </View>
-              {remision?.items.map((item, index) => {
+              {items.map((item, index) => {
                 const key = `${item.description}-${item.quantity}-${index}`;
                 const rowStyle = [styles.tableRow];
                 if (index % 2 === 1) {
@@ -117,6 +131,9 @@ export function RemisionDocument({ remision, company, client, driver }: Remision
                       <>
                         <Text style={[styles.tableCell, styles.tableCellPrice]}>
                           {formatCurrency(item.unitPrice ?? 0)}
+                        </Text>
+                        <Text style={[styles.tableCell, styles.tableCellIva]}>
+                          {formatCurrency(item.ivaValue ?? 0)}
                         </Text>
                         <Text style={[styles.tableCell, styles.tableCellTotal]}>
                           {formatCurrency((item.unitPrice ?? 0) * item.quantity)}
@@ -137,7 +154,7 @@ export function RemisionDocument({ remision, company, client, driver }: Remision
                     <Text style={styles.totalsValue}>{formatCurrency(remision.subtotal ?? 0)}</Text>
                   </View>
                   <View style={styles.totalsRow}>
-                    <Text style={styles.totalsLabel}>IVA ({remision.ivaPercentage ?? 0}%)</Text>
+                    <Text style={styles.totalsLabel}>IVA</Text>
                     <Text style={styles.totalsValue}>{formatCurrency(remision.ivaValue ?? 0)}</Text>
                   </View>
                   {remision.hasRetencion && typeof remision.retencionValue === 'number' && (

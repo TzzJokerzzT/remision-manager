@@ -8,15 +8,7 @@ import { AppSelect } from '@/src/presentation/components/ui/AppSelect';
 import { FormField } from '@/src/presentation/components/ui/FormField';
 import { useCompanies } from '@/src/presentation/features/companies/hooks/useCompanies';
 import { getErrorMessage } from '@/src/shared/utils/getErrorMessage';
-
-interface ClientFormProps {
-  defaultValues?: Partial<ClientFormValues>;
-  isSubmitting?: boolean;
-  submitError?: unknown;
-  submitLabel: string;
-  lockCompany?: boolean;
-  onSubmit: (values: ClientFormValues) => void;
-}
+import type { ClientFormProps } from '../utils/types';
 
 export function ClientForm({
   defaultValues,

@@ -1,7 +1,7 @@
 'use client';
 
 import { Button, Chip } from '@heroui/react';
-import { motion } from 'framer-motion';
+import { m } from 'framer-motion';
 import { ArrowLeft, ExternalLink, FileWarning } from 'lucide-react';
 import dynamic from 'next/dynamic';
 import Link from 'next/link';
@@ -13,6 +13,7 @@ import { Spinner } from '@/src/presentation/components/shared/Spinner';
 import { useClients } from '@/src/presentation/features/clients/hooks/useClients';
 import { useCompanies } from '@/src/presentation/features/companies/hooks/useCompanies';
 import { useDrivers } from '@/src/presentation/features/drivers/hooks/useDrivers';
+import { withInferredItemIva } from '@/src/shared/utils/remisionIva';
 import { useRemision } from '../hooks/useRemisiones';
 
 // import { RemisionDocument } from './RemisionDocument';
@@ -112,8 +113,14 @@ export function RemisionDetail({ remisionId }: RemisionDetailProps) {
   const isPriced = remision.type === 'priced';
   const documentLabel = remision.documentType === 'orden_compra' ? 'Orden de compra' : 'Remisión';
 
+  // Completa hasIva/ivaValue en remisiones guardadas antes del IVA por producto.
+  const items = withInferredItemIva(remision.items, {
+    subtotal: remision.subtotal,
+    ivaValue: remision.ivaValue,
+  });
+
   return (
-    <motion.div
+    <m.div
       initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.25 }}
@@ -167,7 +174,7 @@ export function RemisionDetail({ remisionId }: RemisionDetailProps) {
           <div className="border-default-200 rounded-2xl border p-4">
             <p className="text-xs font-medium tracking-wide text-foreground/40 uppercase">Ítems</p>
             <ul className="mt-2 flex flex-col gap-2">
-              {remision.items.map((item, index) => (
+              {items.map((item, index) => (
                 // biome-ignore lint/suspicious/noArrayIndexKey: los ítems de la remisión no tienen id propio
                 <li key={`${item.description}-${index}`} className="flex justify-between gap-2 text-sm">
                   <span className="text-foreground/80">
@@ -175,7 +182,8 @@ export function RemisionDetail({ remisionId }: RemisionDetailProps) {
                   </span>
                   {isPriced && (
                     <span className="shrink-0 text-foreground/60">
-                      {formatCurrency((item.unitPrice ?? 0) * item.quantity)}
+                      {formatCurrency((item.unitPrice ?? 0) * item.quantity)} · IVA{' '}
+                      {formatCurrency(item.ivaValue ?? 0)}
                     </span>
                   )}
                 </li>
@@ -188,7 +196,7 @@ export function RemisionDetail({ remisionId }: RemisionDetailProps) {
                   <span>{formatCurrency(remision.subtotal ?? 0)}</span>
                 </div>
                 <div className="flex justify-between text-foreground/60">
-                  <span>IVA ({remision.ivaPercentage ?? 0}%)</span>
+                  <span>IVA</span>
                   <span>{formatCurrency(remision.ivaValue ?? 0)}</span>
                 </div>
                 {remision.hasRetencion && typeof remision.retencionValue === 'number' && (
@@ -230,6 +238,6 @@ export function RemisionDetail({ remisionId }: RemisionDetailProps) {
           )}
         </div>
       </div>
-    </motion.div>
+    </m.div>
   );
 }
