@@ -4,23 +4,7 @@ import { Loader2, UploadCloud, X } from 'lucide-react';
 import Image from 'next/image';
 import { type ChangeEvent, type DragEvent, useId, useRef, useState } from 'react';
 import { type CloudinaryUploadResult, uploadToCloudinary } from '@/src/shared/utils/cloudinary';
-
-interface DropzoneProps {
-  /** URL actual (por ejemplo el logoUrl ya guardado del cliente/empresa). */
-  value?: string | null;
-  /** Se llama con la nueva URL al subir, o null al quitar la imagen. */
-  onChange: (url: string | null) => void;
-  label?: string;
-  helperText?: string;
-  /** Mensaje de error de validación del formulario (Zod/RHF). */
-  error?: string;
-  /** Tipos MIME aceptados, separados por coma. Default: imágenes comunes. */
-  accept?: string;
-  maxSizeMB?: number;
-  /** Carpeta en Cloudinary (requiere que el upload preset lo permita). */
-  folder?: string;
-  disabled?: boolean;
-}
+import type { DropzoneProps } from '../utils/types';
 
 export function Dropzone({
   value,
