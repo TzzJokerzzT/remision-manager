@@ -1,30 +1,19 @@
 'use client';
 
-import { Button } from '@heroui/react';
+import { Button, Switch } from '@heroui/react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Plus, Trash2 } from 'lucide-react';
-import { useMemo } from 'react';
 import { Controller, useFieldArray, useForm } from 'react-hook-form';
+import type { z } from 'zod';
 import { type RemisionFormValues, remisionSchema } from '@/src/core/application/dtos/remision.dto';
 import { AppSelect } from '@/src/presentation/components/ui/AppSelect';
 import { FormField } from '@/src/presentation/components/ui/FormField';
 import { useClients } from '@/src/presentation/features/clients/hooks/useClients';
 import { useDrivers } from '@/src/presentation/features/drivers/hooks/useDrivers';
 import { getErrorMessage } from '@/src/shared/utils/getErrorMessage';
-
-const typeOptions = [
-  { id: 'priced', label: 'Con precio e IVA' },
-  { id: 'quantity_only', label: 'Solo cantidad' },
-];
-
-interface RemisionFormProps {
-  companyId: string;
-  defaultValues?: Partial<RemisionFormValues>;
-  isSubmitting?: boolean;
-  submitError?: unknown;
-  submitLabel: string;
-  onSubmit: (values: RemisionFormValues) => void;
-}
+import { computeRemisionTotals } from '@/src/shared/utils/remisionTotals';
+import { documentTypeOptions, typeOptions } from '../utils/constant';
+import type { RemisionFormProps } from '../utils/types';
 
 export function RemisionForm({
   companyId,
@@ -42,8 +31,9 @@ export function RemisionForm({
     control,
     handleSubmit,
     watch,
+    setValue,
     formState: { errors },
-  } = useForm<RemisionFormValues>({
+  } = useForm<z.input<typeof remisionSchema>, unknown, RemisionFormValues>({
     resolver: zodResolver(remisionSchema),
     defaultValues: {
       type: 'priced',
@@ -56,40 +46,64 @@ export function RemisionForm({
 
   const { fields, append, remove } = useFieldArray({ control, name: 'items' });
 
+  const handleRetencionChange = (isSelected: boolean) => setValue('hasRetencion', isSelected === true);
+
   const watchedType = watch('type');
   const watchedItems = watch('items');
   const watchedIva = watch('ivaPercentage');
+  const watchedHasRetencion = watch('hasRetencion');
+  const watchedRetencionPct = watch('retencionPercentage');
   const isPriced = watchedType === 'priced';
 
-  const totals = useMemo(() => {
-    if (!isPriced) return null;
-    const subtotal = (watchedItems ?? []).reduce(
-      (acc, item) => acc + (Number(item.quantity) || 0) * (Number(item.unitPrice) || 0),
-      0
-    );
-    const ivaValue = subtotal * ((Number(watchedIva) || 0) / 100);
-    return { subtotal, ivaValue, total: subtotal + ivaValue };
-  }, [isPriced, watchedItems, watchedIva]);
+  const totals = computeRemisionTotals(
+    watchedItems ?? [],
+    watchedType,
+    watchedIva,
+    watchedHasRetencion,
+    watchedRetencionPct
+  );
 
   const clientOptions = (clients?.items ?? []).map((c) => ({ id: c.id, label: c.name }));
   const driverOptions = (drivers?.items ?? []).map((d) => ({ id: d.id, label: d.name }));
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-5">
-      <Controller
-        name="type"
-        control={control}
-        render={({ field }) => (
-          <AppSelect
-            label="Tipo de remisión"
-            options={typeOptions}
-            selectedKey={field.value}
-            onSelectionChange={(key) => key && field.onChange(key)}
-            isInvalid={!!errors.type}
-            errorMessage={errors.type?.message}
-          />
-        )}
-      />
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+        <Controller
+          name="type"
+          control={control}
+          render={({ field }) => (
+            <AppSelect
+              label="Tipo de remisión"
+              options={typeOptions}
+              selectedKey={field.value}
+              onSelectionChange={(key) => {
+                if (!key) return;
+                field.onChange(key);
+                if (key === 'quantity_only') {
+                  setValue('hasRetencion', false);
+                }
+              }}
+              isInvalid={!!errors.type}
+              errorMessage={errors.type?.message}
+            />
+          )}
+        />
+        <Controller
+          name="documentType"
+          control={control}
+          render={({ field }) => (
+            <AppSelect
+              label="Tipo de documento"
+              options={documentTypeOptions}
+              selectedKey={field.value ?? null}
+              onSelectionChange={(key) => key && field.onChange(key)}
+              isInvalid={!!errors.documentType}
+              errorMessage={errors.documentType?.message}
+            />
+          )}
+        />
+      </div>
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <Controller
@@ -205,6 +219,35 @@ export function RemisionForm({
         />
       )}
 
+      {isPriced && (
+        <div className="flex flex-col gap-3">
+          <Controller
+            name="hasRetencion"
+            control={control}
+            render={({ field }) => (
+              <Switch isSelected={field.value === true} onChange={handleRetencionChange}>
+                <Switch.Content>
+                  <Switch.Control>
+                    <Switch.Thumb />
+                  </Switch.Control>
+                  <span>Retención en la fuente</span>
+                </Switch.Content>
+              </Switch>
+            )}
+          />
+          {watchedHasRetencion && (
+            <FormField
+              label="Retención (%)"
+              type="number"
+              step="any"
+              placeholder="0"
+              error={errors.retencionPercentage?.message}
+              {...register('retencionPercentage', { valueAsNumber: true })}
+            />
+          )}
+        </div>
+      )}
+
       <FormField
         label="Notas (opcional)"
         placeholder="Observaciones de la remisión"
@@ -212,19 +255,27 @@ export function RemisionForm({
         {...register('notes')}
       />
 
-      {totals && (
+      {isPriced && (
         <div className="flex flex-col gap-1 rounded-xl bg-default-100 p-4 text-sm dark:bg-default-50/10">
           <div className="flex justify-between text-foreground/70">
             <span>Subtotal</span>
-            <span>{totals.subtotal.toLocaleString('es-CO', { style: 'currency', currency: 'COP' })}</span>
+            <span>{totals.subtotal?.toLocaleString('es-CO', { style: 'currency', currency: 'COP' })}</span>
           </div>
           <div className="flex justify-between text-foreground/70">
             <span>IVA ({watchedIva || 0}%)</span>
-            <span>{totals.ivaValue.toLocaleString('es-CO', { style: 'currency', currency: 'COP' })}</span>
+            <span>{totals.ivaValue?.toLocaleString('es-CO', { style: 'currency', currency: 'COP' })}</span>
           </div>
+          {totals.retencionValue !== undefined && (
+            <div className="flex justify-between text-foreground/70">
+              <span>Retención ({watchedRetencionPct ?? 0}%)</span>
+              <span>
+                -{totals.retencionValue.toLocaleString('es-CO', { style: 'currency', currency: 'COP' })}
+              </span>
+            </div>
+          )}
           <div className="mt-1 flex justify-between border-t border-default-200 pt-1 font-semibold text-foreground">
             <span>Total</span>
-            <span>{totals.total.toLocaleString('es-CO', { style: 'currency', currency: 'COP' })}</span>
+            <span>{totals.total?.toLocaleString('es-CO', { style: 'currency', currency: 'COP' })}</span>
           </div>
         </div>
       )}

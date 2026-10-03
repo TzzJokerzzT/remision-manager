@@ -1,21 +1,11 @@
 'use client';
 
 import { Button, Chip } from '@heroui/react';
-import { motion } from 'framer-motion';
+import { m } from 'framer-motion';
 import { Calendar, FileText, Pencil, Trash2, Truck, User } from 'lucide-react';
 import Link from 'next/link';
-import type { Client } from '@/src/core/domain/entities/Client';
-import type { Driver } from '@/src/core/domain/entities/Driver';
-import type { Remision } from '@/src/core/domain/entities/Remision';
 import { listItemVariants } from '@/src/presentation/components/shared/AnimatedList';
-
-interface RemisionCardProps {
-  remision: Remision;
-  client?: Client;
-  driver?: Driver;
-  onEdit: () => void;
-  onDelete: () => void;
-}
+import type { RemisionCardProps } from '../utils/types';
 
 function formatCurrency(value: number) {
   return value.toLocaleString('es-CO', { style: 'currency', currency: 'COP' });
@@ -27,9 +17,10 @@ function formatDate(value: string) {
 
 export function RemisionCard({ remision, client, driver, onEdit, onDelete }: RemisionCardProps) {
   const isPriced = remision.type === 'priced';
+  const documentLabel = remision.documentType === 'orden_compra' ? 'Orden de compra' : 'Remisión';
 
   return (
-    <motion.div
+    <m.div
       layout
       variants={listItemVariants}
       exit={{ opacity: 0, scale: 0.96 }}
@@ -38,7 +29,7 @@ export function RemisionCard({ remision, client, driver, onEdit, onDelete }: Rem
       <div className="flex items-start justify-between gap-2">
         <div>
           <p className="text-xs font-medium uppercase tracking-wide text-foreground/40">
-            Remisión #{remision.consecutive}
+            {`${documentLabel} #${remision.consecutive}`}
           </p>
           <h3 className="mt-0.5 font-medium text-foreground">{client?.name ?? 'Cliente'}</h3>
         </div>
@@ -67,6 +58,9 @@ export function RemisionCard({ remision, client, driver, onEdit, onDelete }: Rem
         {isPriced && typeof remision.total === 'number' && (
           <span className="ml-1 font-semibold text-foreground">· {formatCurrency(remision.total)}</span>
         )}
+        {isPriced && remision.hasRetencion && typeof remision.retencionValue === 'number' && (
+          <span className="ml-1">· Retención {formatCurrency(remision.retencionValue)}</span>
+        )}
       </div>
 
       <div className="mt-1 flex items-center gap-2">
@@ -89,6 +83,6 @@ export function RemisionCard({ remision, client, driver, onEdit, onDelete }: Rem
           <Trash2 className="h-4 w-4" />
         </Button>
       </div>
-    </motion.div>
+    </m.div>
   );
 }

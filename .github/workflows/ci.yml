@@ -1,0 +1,98 @@
+name: CI
+
+# Gate estricto: nada entra a `production` sin pasar por acá.
+# No despliega nada — el deploy es una decisión aparte.
+on:
+  push:
+    branches: [production]
+  pull_request:
+    branches: [production]
+  workflow_dispatch:
+
+# Permisos mínimos: el workflow solo lee el repositorio.
+permissions:
+  contents: read
+
+# Un push nuevo sobre la misma rama cancela la corrida anterior en vez de encolar
+# trabajo que ya quedó obsoleto.
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  NEXT_TELEMETRY_DISABLED: '1'
+  # Valor de verificación: el build tiene que resolver la variable, y no queremos
+  # que CI dependa del fallback de desarrollo.
+  NEXT_PUBLIC_API_URL: https://api.ci.invalid/api
+
+jobs:
+  verify:
+    name: Verify (typecheck, lint, tests, build)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # Versión fijada a propósito: si el runtime cambia, el veredicto del gate
+      # cambia con él. Se sube de forma deliberada, no por arrastre.
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.4.2
+
+      # --frozen-lockfile: si el lockfile no coincide con package.json, falla acá
+      # en vez de resolver dependencias distintas a las de la máquina de quien
+      # desarrolla.
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Typecheck
+        run: bun run typecheck
+
+      # --error-on-warnings: mismo veredicto que `bun run check` local.
+      - name: Lint and format check
+        run: bun run check
+
+      - name: Tests
+        run: bun run test --ci --coverage
+
+      - name: Build
+        run: bun run build
+
+      - name: Upload coverage
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage
+          path: coverage/
+          if-no-files-found: ignore
+
+  commits:
+    name: Commit messages
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          # El rango completo del PR necesita la historia, no solo el último commit.
+          fetch-depth: 0
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.4.2
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      # El hook `commit-msg` se puede saltar con --no-verify; esto cierra ese hueco.
+      # commitlint ignora los merge commits por defecto.
+      - name: Lint commit messages
+        run: >-
+          bunx commitlint
+          --from ${{ github.event.pull_request.base.sha }}
+          --to ${{ github.event.pull_request.head.sha }}
+          --verbose

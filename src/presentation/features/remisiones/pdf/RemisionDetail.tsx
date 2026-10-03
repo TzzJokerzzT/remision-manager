@@ -1,7 +1,7 @@
 'use client';
 
 import { Button, Chip } from '@heroui/react';
-import { motion } from 'framer-motion';
+import { m } from 'framer-motion';
 import { ArrowLeft, ExternalLink, FileWarning } from 'lucide-react';
 import dynamic from 'next/dynamic';
 import Link from 'next/link';
@@ -110,9 +110,10 @@ export function RemisionDetail({ remisionId }: RemisionDetailProps) {
   }
 
   const isPriced = remision.type === 'priced';
+  const documentLabel = remision.documentType === 'orden_compra' ? 'Orden de compra' : 'Remisión';
 
   return (
-    <motion.div
+    <m.div
       initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.25 }}
@@ -127,7 +128,7 @@ export function RemisionDetail({ remisionId }: RemisionDetailProps) {
           </Link>
           <div>
             <h1 className="text-xl font-semibold text-foreground">
-              Remisión #{String(remision.consecutive).padStart(5, '0')}
+              {`${documentLabel} #${String(remision.consecutive).padStart(5, '0')}`}
             </h1>
             <p className="text-sm text-foreground/60">{formatDate(remision.createdAt)}</p>
           </div>
@@ -190,6 +191,12 @@ export function RemisionDetail({ remisionId }: RemisionDetailProps) {
                   <span>IVA ({remision.ivaPercentage ?? 0}%)</span>
                   <span>{formatCurrency(remision.ivaValue ?? 0)}</span>
                 </div>
+                {remision.hasRetencion && typeof remision.retencionValue === 'number' && (
+                  <div className="flex justify-between text-foreground/60">
+                    <span>Retención ({remision.retencionPercentage ?? 0}%)</span>
+                    <span>-{formatCurrency(remision.retencionValue)}</span>
+                  </div>
+                )}
                 <div className="flex justify-between font-semibold text-foreground">
                   <span>Total</span>
                   <span>{formatCurrency(remision.total ?? 0)}</span>
@@ -223,6 +230,6 @@ export function RemisionDetail({ remisionId }: RemisionDetailProps) {
           )}
         </div>
       </div>
-    </motion.div>
+    </m.div>
   );
 }

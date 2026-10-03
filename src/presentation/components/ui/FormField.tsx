@@ -1,12 +1,7 @@
 'use client';
 
 import { Input, Label } from '@heroui/react';
-import type { ComponentProps } from 'react';
-
-interface FormFieldProps extends Omit<ComponentProps<typeof Input>, 'className'> {
-  label: string;
-  error?: string;
-}
+import type { FormFieldProps } from '../utils/types';
 
 export function FormField({ label, error, id, ...rest }: FormFieldProps) {
   const fieldId = id ?? label.toLowerCase().replace(/\s+/g, '-');

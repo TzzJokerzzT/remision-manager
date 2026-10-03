@@ -3,14 +3,7 @@
 import { Button } from '@heroui/react';
 import { Search, X } from 'lucide-react';
 import type { ChangeEvent, KeyboardEvent } from 'react';
-
-interface SearchInputProps {
-  value: string;
-  onChange: (value: string) => void;
-  onSubmit: () => void;
-  onClear: () => void;
-  placeholder?: string;
-}
+import type { SearchInputProps } from '../utils/types';
 
 export function SearchInput({ value, onChange, onSubmit, onClear, placeholder }: SearchInputProps) {
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => onChange(e.target.value);

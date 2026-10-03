@@ -3,6 +3,7 @@ import type { Client } from '@/src/core/domain/entities/Client';
 import type { Company } from '@/src/core/domain/entities/Company';
 import type { Driver } from '@/src/core/domain/entities/Driver';
 import type { Remision } from '@/src/core/domain/entities/Remision';
+import { cloudinaryImageUrl } from '@/src/shared/utils/cloudinary';
 import { styles } from './styles';
 
 // Registrar fuentes (opcional, puedes ajustar según tus necesidades)
@@ -16,6 +17,9 @@ Font.register({
     },
   ],
 });
+
+// El logo se imprime a 5rem (80px): 256px da margen de sobra para impresión.
+const PDF_LOGO = { width: 256 } as const;
 
 interface RemisionDocumentProps {
   remision: Remision;
@@ -43,7 +47,9 @@ export function RemisionDocument({ remision, company, client, driver }: Remision
             {/* Encabezado */}
             <View style={styles.header}>
               <View style={styles.companyInfoContainer}>
-                {company.logoUrl && <Image src={company.logoUrl} style={styles.companyLogo} />}
+                {company.logoUrl && (
+                  <Image src={cloudinaryImageUrl(company.logoUrl, PDF_LOGO)} style={styles.companyLogo} />
+                )}
                 <View style={styles.companyInfo}>
                   <Text style={styles.title}>{company?.name}</Text>
                   <Text style={styles.subtitle}>NIT {company?.nit}</Text>
@@ -53,7 +59,9 @@ export function RemisionDocument({ remision, company, client, driver }: Remision
                 </View>
               </View>
               <View>
-                <Text style={styles.title}>REMISIÓN</Text>
+                <Text style={styles.title}>
+                  {remision.documentType === 'orden_compra' ? 'ORDEN DE COMPRA' : 'REMISIÓN'}
+                </Text>
                 <Text style={styles.badge}>No. {String(remision?.consecutive).padStart(5, '0')}</Text>
                 <Text style={styles.subtitle}>{formatDate(remision?.createdAt)}</Text>
                 <Text style={styles.subtitle}>{isPriced ? 'Con precio + IVA' : 'Solo cantidad'}</Text>
@@ -138,6 +146,12 @@ export function RemisionDocument({ remision, company, client, driver }: Remision
                     <Text style={styles.totalsLabel}>IVA ({remision.ivaPercentage ?? 0}%)</Text>
                     <Text style={styles.totalsValue}>{formatCurrency(remision.ivaValue ?? 0)}</Text>
                   </View>
+                  {remision.hasRetencion && typeof remision.retencionValue === 'number' && (
+                    <View style={styles.totalsRow}>
+                      <Text style={styles.totalsLabel}>Retención ({remision.retencionPercentage ?? 0}%)</Text>
+                      <Text style={styles.totalsValue}>-{formatCurrency(remision.retencionValue)}</Text>
+                    </View>
+                  )}
                   <View style={styles.divider} />
                   <View style={styles.totalsRow}>
                     <Text style={styles.totalsLabel}>TOTAL</Text>

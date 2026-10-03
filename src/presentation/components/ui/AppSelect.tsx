@@ -2,24 +2,7 @@
 
 import { ListBoxItemRoot, ListBoxRoot, Select } from '@heroui/react';
 import { ChevronDown } from 'lucide-react';
-
-export interface AppSelectOption {
-  id: string;
-  label: string;
-}
-
-interface AppSelectProps {
-  label?: string;
-  placeholder?: string;
-  options: AppSelectOption[];
-  selectedKey: string | null;
-  onSelectionChange: (key: string | null) => void;
-  isInvalid?: boolean;
-  errorMessage?: string;
-  isDisabled?: boolean;
-  fullWidth?: boolean;
-  className?: string;
-}
+import type { AppSelectOption, AppSelectProps } from '../utils/types';
 
 export function AppSelect({
   label,

@@ -8,15 +8,7 @@ import { AppSelect } from '@/src/presentation/components/ui/AppSelect';
 import { FormField } from '@/src/presentation/components/ui/FormField';
 import { useCompanies } from '@/src/presentation/features/companies/hooks/useCompanies';
 import { getErrorMessage } from '@/src/shared/utils/getErrorMessage';
-
-interface DriverFormProps {
-  defaultValues?: Partial<DriverFormValues>;
-  isSubmitting?: boolean;
-  submitError?: unknown;
-  submitLabel: string;
-  lockCompany?: boolean;
-  onSubmit: (values: DriverFormValues) => void;
-}
+import type { DriverFormProps } from '../utils/types';
 
 export function DriverForm({
   defaultValues,

@@ -1,19 +1,11 @@
 'use client';
 
-import { motion } from 'framer-motion';
-import type { LucideIcon } from 'lucide-react';
-import type { ReactNode } from 'react';
-
-interface EmptyStateProps {
-  icon: LucideIcon;
-  title: string;
-  description: string;
-  action?: ReactNode;
-}
+import { m } from 'framer-motion';
+import type { EmptyStateProps } from '../utils/types';
 
 export function EmptyState({ icon: Icon, title, description, action }: EmptyStateProps) {
   return (
-    <motion.div
+    <m.div
       initial={{ opacity: 0, scale: 0.97 }}
       animate={{ opacity: 1, scale: 1 }}
       transition={{ duration: 0.25 }}
@@ -25,6 +17,6 @@ export function EmptyState({ icon: Icon, title, description, action }: EmptyStat
       <h3 className="text-base font-medium text-foreground">{title}</h3>
       <p className="max-w-sm text-sm text-foreground/60">{description}</p>
       {action}
-    </motion.div>
+    </m.div>
   );
 }

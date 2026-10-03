@@ -1,17 +1,11 @@
 'use client';
 
-import { motion } from 'framer-motion';
-import type { ReactNode } from 'react';
-
-interface PageHeaderProps {
-  title: string;
-  description?: string;
-  action?: ReactNode;
-}
+import { m } from 'framer-motion';
+import type { PageHeaderProps } from '../utils/types';
 
 export function PageHeader({ title, description, action }: PageHeaderProps) {
   return (
-    <motion.div
+    <m.div
       initial={{ opacity: 0, y: -8 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.25 }}
@@ -22,6 +16,6 @@ export function PageHeader({ title, description, action }: PageHeaderProps) {
         {description && <p className="mt-1 text-sm text-foreground/60">{description}</p>}
       </div>
       {action && <div className="shrink-0">{action}</div>}
-    </motion.div>
+    </m.div>
   );
 }

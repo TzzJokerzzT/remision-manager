@@ -1,16 +1,11 @@
 'use client';
 
-import { AnimatePresence, motion } from 'framer-motion';
-import type { ReactNode } from 'react';
-
-interface AnimatedListProps {
-  children: ReactNode;
-  className?: string;
-}
+import { AnimatePresence, m } from 'framer-motion';
+import type { AnimatedListProps } from '../utils/types';
 
 export function AnimatedList({ children, className }: AnimatedListProps) {
   return (
-    <motion.div
+    <m.div
       className={className}
       initial="hidden"
       animate="visible"
@@ -19,7 +14,7 @@ export function AnimatedList({ children, className }: AnimatedListProps) {
       }}
     >
       <AnimatePresence mode="popLayout">{children}</AnimatePresence>
-    </motion.div>
+    </m.div>
   );
 }
 

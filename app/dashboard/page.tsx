@@ -1,6 +1,6 @@
 'use client';
 
-import { motion } from 'framer-motion';
+import { m } from 'framer-motion';
 import { ArrowRight, Building2, FileText, Truck, Users } from 'lucide-react';
 import Link from 'next/link';
 import { PageHeader } from '@/src/presentation/components/shared/PageHeader';
@@ -54,7 +54,7 @@ export default function DashboardPage() {
         {cards.map((card, index) => {
           const Icon = card.icon;
           return (
-            <motion.div
+            <m.div
               key={card.href}
               initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
@@ -75,7 +75,7 @@ export default function DashboardPage() {
                   <p className="text-sm text-foreground/60">{card.label}</p>
                 </div>
               </Link>
-            </motion.div>
+            </m.div>
           );
         })}
       </div>

@@ -2,7 +2,7 @@
 
 import { Button } from '@heroui/react';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { motion } from 'framer-motion';
+import { m } from 'framer-motion';
 import Link from 'next/link';
 import { useForm } from 'react-hook-form';
 import { type RegisterFormValues, registerSchema } from '@/src/core/application/dtos/auth.dto';
@@ -25,7 +25,7 @@ export function RegisterForm() {
   };
 
   return (
-    <motion.form
+    <m.form
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3 }}
@@ -81,6 +81,6 @@ export function RegisterForm() {
           Inicia sesión
         </Link>
       </p>
-    </motion.form>
+    </m.form>
   );
 }

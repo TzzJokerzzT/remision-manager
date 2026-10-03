@@ -6,14 +6,8 @@ import { type CompanyFormValues, companySchema } from '@/src/core/application/dt
 import { Dropzone } from '@/src/presentation/components/ui/Dropzone';
 import { FormField } from '@/src/presentation/components/ui/FormField';
 import { getErrorMessage } from '@/src/shared/utils/getErrorMessage';
+import type { CompanyFormProps } from '../utils/types';
 
-interface CompanyFormProps {
-  defaultValues?: Partial<CompanyFormValues>;
-  isSubmitting?: boolean;
-  submitError?: unknown;
-  submitLabel: string;
-  onSubmit: (values: CompanyFormValues) => void;
-}
 export function CompanyForm({
   defaultValues,
   isSubmitting,

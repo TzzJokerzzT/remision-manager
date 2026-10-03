@@ -1,21 +1,18 @@
-'use client';
+import { cookies } from 'next/headers';
+import { redirect } from 'next/navigation';
+import { SESSION_HINT_COOKIE, SESSION_HINT_VALUE } from '@/src/shared/constants/sessionHint';
 
-import { useRouter } from 'next/navigation';
-import { useEffect } from 'react';
-import { Spinner } from '@/src/presentation/components/shared/Spinner';
-import { useAuthStore } from '@/src/presentation/stores/auth.store';
+/**
+ * Raíz de la aplicación: solo decide el destino.
+ *
+ * Antes era un client component entero (zustand + spinner + useEffect +
+ * router.replace) que costaba ~223 KiB gz de JS únicamente para redirigir. La
+ * decisión no necesita el token: alcanza con la pista de sesión no autoritativa,
+ * porque el acceso real lo siguen controlando la API y `ProtectedShell`.
+ */
+export default async function RootPage() {
+  const store = await cookies();
+  const hasSessionHint = store.get(SESSION_HINT_COOKIE)?.value === SESSION_HINT_VALUE;
 
-export default function RootPage() {
-  const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
-  const router = useRouter();
-
-  useEffect(() => {
-    router.replace(isAuthenticated ? '/dashboard' : '/login');
-  }, [isAuthenticated, router]);
-
-  return (
-    <div className="flex h-screen w-full items-center justify-center bg-background">
-      <Spinner />
-    </div>
-  );
+  redirect(hasSessionHint ? '/dashboard' : '/login');
 }

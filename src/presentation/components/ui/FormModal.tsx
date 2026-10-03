@@ -1,15 +1,8 @@
 'use client';
 
-import { Modal, type UseOverlayStateReturn } from '@heroui/react';
+import { Modal } from '@heroui/react';
 import { X } from 'lucide-react';
-import type { ReactNode } from 'react';
-
-interface FormModalProps {
-  state: UseOverlayStateReturn;
-  title: string;
-  description?: string;
-  children: ReactNode;
-}
+import type { FormModalProps } from '../utils/types';
 
 export function FormModal({ state, title, description, children }: FormModalProps) {
   return (

@@ -17,7 +17,7 @@ import {
   useFilter,
   useOverlayState,
 } from '@heroui/react';
-import { CalendarDate } from '@internationalized/date';
+import type { CalendarDate } from '@internationalized/date';
 import { Eye, FileText, Pencil, Plus, Search as SearchIcon, Trash2, X } from 'lucide-react';
 import Link from 'next/link';
 import { useMemo, useState } from 'react';
@@ -39,11 +39,13 @@ import {
   useRemisiones,
   useUpdateRemision,
 } from '../hooks/useRemisiones';
+import { typeOptionsRemisionList } from '../utils/constant';
 import { RemisionForm } from './RemisionForm';
 
 function cleanPayload(values: RemisionFormValues) {
   return {
     type: values.type,
+    documentType: values.documentType,
     companyId: values.companyId,
     clientId: values.clientId,
     driverId: values.driverId || undefined,
@@ -53,6 +55,8 @@ function cleanPayload(values: RemisionFormValues) {
       unitPrice: values.type === 'priced' ? item.unitPrice : undefined,
     })),
     ivaPercentage: values.type === 'priced' ? values.ivaPercentage : undefined,
+    hasRetencion: values.type === 'priced' ? values.hasRetencion : false,
+    retencionPercentage: values.retencionPercentage,
     notes: values.notes || undefined,
   };
 }
@@ -125,7 +129,7 @@ export function RemisionList() {
   const handleSubmit = (values: RemisionFormValues) => {
     const payload = cleanPayload(values);
     if (editingRemision) {
-      const { companyId: _companyId, type: _type, ...updatePayload } = payload;
+      const { companyId: _companyId, ...updatePayload } = payload;
       updateMutation.mutate(
         { id: editingRemision.id, payload: updatePayload },
         { onSuccess: () => formState.close() }
@@ -158,11 +162,6 @@ export function RemisionList() {
   };
   const hasActiveFilters =
     clientFilter != null || driverFilter != null || typeFilter != null || dateRange != null;
-
-  const typeOptions = [
-    { id: 'priced', name: 'Con precio + IVA' },
-    { id: 'quantity_only', name: 'Solo cantidad' },
-  ];
 
   // Filter function for Autocomplete.Filter
   const { contains } = useFilter({ sensitivity: 'base' });
@@ -317,7 +316,7 @@ export function RemisionList() {
                   <p className="px-2 py-1 text-sm text-foreground/50">Sin resultados</p>
                 )}
               >
-                {typeOptions.map((opt) => (
+                {typeOptionsRemisionList.map((opt) => (
                   <ListBox.Item key={opt.id} id={opt.id} textValue={opt.name}>
                     {opt.name}
                     <ListBox.ItemIndicator />
@@ -535,11 +534,14 @@ export function RemisionList() {
             editingRemision
               ? {
                   type: editingRemision.type,
+                  documentType: editingRemision.documentType,
                   companyId: editingRemision.companyId,
                   clientId: editingRemision.clientId,
                   driverId: editingRemision.driverId,
                   items: editingRemision.items,
                   ivaPercentage: editingRemision.ivaPercentage ?? 19,
+                  hasRetencion: editingRemision.hasRetencion,
+                  retencionPercentage: editingRemision.retencionPercentage ?? undefined,
                   notes: editingRemision.notes ?? '',
                 }
               : { companyId: selectedCompany.id }

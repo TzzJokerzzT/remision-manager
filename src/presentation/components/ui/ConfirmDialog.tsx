@@ -1,17 +1,8 @@
 'use client';
 
-import type { UseOverlayStateReturn } from '@heroui/react';
 import { AlertDialog, Button, useOverlayState } from '@heroui/react';
 import { AlertTriangle } from 'lucide-react';
-
-interface ConfirmDialogProps {
-  state: UseOverlayStateReturn;
-  title: string;
-  description: string;
-  confirmLabel?: string;
-  isLoading?: boolean;
-  onConfirm: () => void;
-}
+import type { ConfirmDialogProps } from '../utils/types';
 
 export function ConfirmDialog({
   state,
