@@ -3,7 +3,7 @@
 // ===============================================
 
 import type { Input, UseOverlayStateReturn } from '@heroui/react';
-import type { ComponentProps } from 'react';
+import type { ComponentProps, ReactNode } from 'react';
 
 export interface AppSelectOption {
   id: string;
@@ -64,4 +64,15 @@ export interface DropzoneProps {
 export interface FormFieldProps extends Omit<ComponentProps<typeof Input>, 'className'> {
   label: string;
   error?: string;
+}
+
+// ===============================================
+// FormModal Props
+// ===============================================
+
+export interface FormModalProps {
+  state: UseOverlayStateReturn;
+  title: string;
+  description?: string;
+  children: ReactNode;
 }
