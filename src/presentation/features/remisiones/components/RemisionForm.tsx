@@ -15,6 +15,20 @@ import { computeRemisionTotals } from '@/src/shared/utils/remisionTotals';
 import { documentTypeOptions, typeOptions } from '../utils/constant';
 import type { RemisionFormProps } from '../utils/types';
 
+/** IVA por defecto de un producto nuevo. Es editable por ítem. */
+const DEFAULT_IVA_PERCENTAGE = 19;
+
+/** Ítem nuevo: gravado al 19 % por defecto, y se puede apagar o cambiar por producto. */
+function emptyItem() {
+  return {
+    description: '',
+    quantity: 1,
+    unitPrice: 0,
+    hasIva: true,
+    ivaPercentage: DEFAULT_IVA_PERCENTAGE,
+  };
+}
+
 export function RemisionForm({
   companyId,
   defaultValues,
@@ -38,8 +52,7 @@ export function RemisionForm({
     defaultValues: {
       type: 'priced',
       companyId,
-      items: [{ description: '', quantity: 1, unitPrice: 0 }],
-      ivaPercentage: 19,
+      items: [emptyItem()],
       ...defaultValues,
     },
   });
@@ -50,15 +63,15 @@ export function RemisionForm({
 
   const watchedType = watch('type');
   const watchedItems = watch('items');
-  const watchedIva = watch('ivaPercentage');
   const watchedHasRetencion = watch('hasRetencion');
   const watchedRetencionPct = watch('retencionPercentage');
   const isPriced = watchedType === 'priced';
 
+  // El IVA sale de los ítems, no de un campo global: `ivaValue` es la suma de los IVA por
+  // producto y `subtotal` la suma de los productos antes de IVA.
   const totals = computeRemisionTotals(
     watchedItems ?? [],
     watchedType,
-    watchedIva,
     watchedHasRetencion,
     watchedRetencionPct
   );
@@ -145,60 +158,94 @@ export function RemisionForm({
       <div className="flex flex-col gap-3">
         <div className="flex items-center justify-between">
           <span className="text-sm font-medium text-foreground/80">Ítems</span>
-          <Button
-            type="button"
-            size="sm"
-            variant="outline"
-            onPress={() => append({ description: '', quantity: 1, unitPrice: 0 })}
-          >
+          <Button type="button" size="sm" variant="outline" onPress={() => append(emptyItem())}>
             <Plus className="h-3.5 w-3.5" /> Agregar ítem
           </Button>
         </div>
 
         <div className="flex flex-col gap-3">
           {fields.map((field, index) => (
-            <div
-              key={field.id}
-              className="grid grid-cols-1 gap-2 rounded-xl border border-default-200 p-3 sm:grid-cols-[1fr_110px_110px_44px] sm:items-end"
-            >
-              <FormField
-                label="Descripción"
-                placeholder="Producto o servicio"
-                error={errors.items?.[index]?.description?.message}
-                {...register(`items.${index}.description` as const)}
-              />
-              <FormField
-                label="Cantidad"
-                type="number"
-                step="any"
-                placeholder="1"
-                error={errors.items?.[index]?.quantity?.message}
-                {...register(`items.${index}.quantity` as const, { valueAsNumber: true })}
-              />
-              {isPriced && (
+            <div key={field.id} className="flex flex-col gap-3 rounded-xl border border-default-200 p-3">
+              <div className="grid grid-cols-1 gap-2 sm:grid-cols-[1fr_110px_110px_44px] sm:items-end">
                 <FormField
-                  label="Precio unitario"
+                  label="Descripción"
+                  placeholder="Producto o servicio"
+                  error={errors.items?.[index]?.description?.message}
+                  {...register(`items.${index}.description` as const)}
+                />
+                <FormField
+                  label="Cantidad"
                   type="number"
                   step="any"
-                  placeholder="0"
-                  error={errors.items?.[index]?.unitPrice?.message}
-                  {...register(`items.${index}.unitPrice` as const, { valueAsNumber: true })}
+                  placeholder="1"
+                  error={errors.items?.[index]?.quantity?.message}
+                  {...register(`items.${index}.quantity` as const, { valueAsNumber: true })}
                 />
-              )}
-              <div className="flex items-end">
-                <Button
-                  type="button"
-                  size="sm"
-                  variant="ghost"
-                  isIconOnly
-                  aria-label="Eliminar ítem"
-                  isDisabled={fields.length === 1}
-                  className="text-danger hover:bg-danger/10"
-                  onPress={() => remove(index)}
-                >
-                  <Trash2 className="h-4 w-4" />
-                </Button>
+                {isPriced && (
+                  <FormField
+                    label="Precio unitario"
+                    type="number"
+                    step="any"
+                    placeholder="0"
+                    error={errors.items?.[index]?.unitPrice?.message}
+                    {...register(`items.${index}.unitPrice` as const, { valueAsNumber: true })}
+                  />
+                )}
+                <div className="flex items-end">
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="ghost"
+                    isIconOnly
+                    aria-label="Eliminar ítem"
+                    isDisabled={fields.length === 1}
+                    className="text-danger hover:bg-danger/10"
+                    onPress={() => remove(index)}
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </div>
               </div>
+
+              {/* El IVA es por producto. Apagarlo deja la tasa ausente, que es la regla del
+                  backend para un ítem exento; encenderlo la repone en el valor por defecto. */}
+              {isPriced && (
+                <div className="flex flex-col gap-2 border-default-200 border-t pt-3 sm:flex-row sm:items-end sm:gap-4">
+                  <Controller
+                    name={`items.${index}.hasIva` as const}
+                    control={control}
+                    render={({ field: ivaField }) => (
+                      <Switch
+                        isSelected={ivaField.value === true}
+                        onChange={(isSelected: boolean) => {
+                          ivaField.onChange(isSelected === true);
+                          setValue(
+                            `items.${index}.ivaPercentage` as const,
+                            isSelected ? DEFAULT_IVA_PERCENTAGE : undefined
+                          );
+                        }}
+                      >
+                        <Switch.Content>
+                          <Switch.Control>
+                            <Switch.Thumb />
+                          </Switch.Control>
+                          <span className="text-sm text-foreground/80">Este producto tiene IVA</span>
+                        </Switch.Content>
+                      </Switch>
+                    )}
+                  />
+                  {watchedItems?.[index]?.hasIva === true && (
+                    <FormField
+                      label="IVA (%)"
+                      type="number"
+                      step="any"
+                      placeholder={String(DEFAULT_IVA_PERCENTAGE)}
+                      error={errors.items?.[index]?.ivaPercentage?.message}
+                      {...register(`items.${index}.ivaPercentage` as const, { valueAsNumber: true })}
+                    />
+                  )}
+                </div>
+              )}
             </div>
           ))}
         </div>
@@ -207,17 +254,6 @@ export function RemisionForm({
         )}
         {errors.items?.message && <span className="text-xs text-danger">{errors.items.message}</span>}
       </div>
-
-      {isPriced && (
-        <FormField
-          label="IVA (%)"
-          type="number"
-          step="any"
-          placeholder="19"
-          error={errors.ivaPercentage?.message}
-          {...register('ivaPercentage', { valueAsNumber: true })}
-        />
-      )}
 
       {isPriced && (
         <div className="flex flex-col gap-3">
@@ -262,7 +298,7 @@ export function RemisionForm({
             <span>{totals.subtotal?.toLocaleString('es-CO', { style: 'currency', currency: 'COP' })}</span>
           </div>
           <div className="flex justify-between text-foreground/70">
-            <span>IVA ({watchedIva || 0}%)</span>
+            <span>IVA</span>
             <span>{totals.ivaValue?.toLocaleString('es-CO', { style: 'currency', currency: 'COP' })}</span>
           </div>
           {totals.retencionValue !== undefined && (
