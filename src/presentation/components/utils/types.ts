@@ -3,6 +3,7 @@
 // ===============================================
 
 import type { Input, UseOverlayStateReturn } from '@heroui/react';
+import type { LucideIcon } from 'lucide-react';
 import type { ComponentProps, ReactNode } from 'react';
 
 export interface AppSelectOption {
@@ -75,4 +76,54 @@ export interface FormModalProps {
   title: string;
   description?: string;
   children: ReactNode;
+}
+
+// ===============================================
+// AnimatedList Props
+// ===============================================
+
+export interface AnimatedListProps {
+  children: ReactNode;
+  className?: string;
+}
+
+// ===============================================
+// EmptyState Props
+// ===============================================
+
+export interface EmptyStateProps {
+  icon: LucideIcon;
+  title: string;
+  description: string;
+  action?: ReactNode;
+}
+
+// ===============================================
+// PageHeader Props
+// ===============================================
+
+export interface PageHeaderProps {
+  title: string;
+  description?: string;
+  action?: ReactNode;
+}
+
+// ===============================================
+// PageHeader Props
+// ===============================================
+
+export interface SearchInputProps {
+  value: string;
+  onChange: (value: string) => void;
+  onSubmit: () => void;
+  onClear: () => void;
+  placeholder?: string;
+}
+
+// ===============================================
+// PageHeader Props
+// ===============================================
+
+export interface SidebarProps {
+  onNavigate?: () => void;
 }
