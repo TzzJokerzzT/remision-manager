@@ -110,6 +110,7 @@ export function RemisionDetail({ remisionId }: RemisionDetailProps) {
   }
 
   const isPriced = remision.type === 'priced';
+  const documentLabel = remision.documentType === 'orden_compra' ? 'Orden de compra' : 'Remisión';
 
   return (
     <motion.div
@@ -127,7 +128,7 @@ export function RemisionDetail({ remisionId }: RemisionDetailProps) {
           </Link>
           <div>
             <h1 className="text-xl font-semibold text-foreground">
-              Remisión #{String(remision.consecutive).padStart(5, '0')}
+              {`${documentLabel} #${String(remision.consecutive).padStart(5, '0')}`}
             </h1>
             <p className="text-sm text-foreground/60">{formatDate(remision.createdAt)}</p>
           </div>
@@ -190,6 +191,12 @@ export function RemisionDetail({ remisionId }: RemisionDetailProps) {
                   <span>IVA ({remision.ivaPercentage ?? 0}%)</span>
                   <span>{formatCurrency(remision.ivaValue ?? 0)}</span>
                 </div>
+                {remision.hasRetencion && typeof remision.retencionValue === 'number' && (
+                  <div className="flex justify-between text-foreground/60">
+                    <span>Retención ({remision.retencionPercentage ?? 0}%)</span>
+                    <span>-{formatCurrency(remision.retencionValue)}</span>
+                  </div>
+                )}
                 <div className="flex justify-between font-semibold text-foreground">
                   <span>Total</span>
                   <span>{formatCurrency(remision.total ?? 0)}</span>

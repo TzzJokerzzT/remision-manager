@@ -53,7 +53,9 @@ export function RemisionDocument({ remision, company, client, driver }: Remision
                 </View>
               </View>
               <View>
-                <Text style={styles.title}>REMISIÓN</Text>
+                <Text style={styles.title}>
+                  {remision.documentType === 'orden_compra' ? 'ORDEN DE COMPRA' : 'REMISIÓN'}
+                </Text>
                 <Text style={styles.badge}>No. {String(remision?.consecutive).padStart(5, '0')}</Text>
                 <Text style={styles.subtitle}>{formatDate(remision?.createdAt)}</Text>
                 <Text style={styles.subtitle}>{isPriced ? 'Con precio + IVA' : 'Solo cantidad'}</Text>
@@ -138,6 +140,12 @@ export function RemisionDocument({ remision, company, client, driver }: Remision
                     <Text style={styles.totalsLabel}>IVA ({remision.ivaPercentage ?? 0}%)</Text>
                     <Text style={styles.totalsValue}>{formatCurrency(remision.ivaValue ?? 0)}</Text>
                   </View>
+                  {remision.hasRetencion && typeof remision.retencionValue === 'number' && (
+                    <View style={styles.totalsRow}>
+                      <Text style={styles.totalsLabel}>Retención ({remision.retencionPercentage ?? 0}%)</Text>
+                      <Text style={styles.totalsValue}>-{formatCurrency(remision.retencionValue)}</Text>
+                    </View>
+                  )}
                   <View style={styles.divider} />
                   <View style={styles.totalsRow}>
                     <Text style={styles.totalsLabel}>TOTAL</Text>

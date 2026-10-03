@@ -1,4 +1,4 @@
-import type { Remision, RemisionItem, RemisionType } from '../entities/Remision';
+import type { DocumentType, Remision, RemisionItem, RemisionType } from '../entities/Remision';
 
 export interface PaginatedRemisionResponse {
   items: Remision[];
@@ -10,17 +10,24 @@ export interface PaginatedRemisionResponse {
 
 export interface CreateRemisionPayload {
   type: RemisionType;
+  documentType: DocumentType;
   companyId: string;
   clientId: string;
   driverId?: string;
   items: RemisionItem[];
   ivaPercentage?: number;
+  hasRetencion: boolean;
+  retencionPercentage?: number;
   notes?: string;
 }
 
 export interface UpdateRemisionPayload {
+  type?: RemisionType;
+  documentType?: DocumentType;
   items?: RemisionItem[];
   ivaPercentage?: number;
+  hasRetencion?: boolean;
+  retencionPercentage?: number;
   notes?: string;
   clientId?: string;
   driverId?: string;
