@@ -103,25 +103,38 @@ export const styles = StyleSheet.create({
   tableCell: {
     fontSize: 10,
   },
+  /**
+   * La descripción es la única columna elástica: se queda con el espacio que dejan las
+   * numéricas, que van a ancho fijo. Antes tenía un 50 % fijo y los anchos sumaban 110 %
+   * (50 + 15 + 20 + 10 + 15), así que el layout comprimía las columnas y el importe de IVA
+   * —la más angosta, 10 %— terminaba partido en dos líneas.
+   */
   tableCellDescription: {
-    width: '50%',
+    flexGrow: 1,
+    flexShrink: 1,
+    flexBasis: 0,
   },
   tableCellQty: {
-    width: '15%',
+    width: '8%',
     textAlign: 'right',
+    // Las numéricas no se comprimen: si la descripción es larga, cede ella.
+    flexShrink: 0,
   },
   tableCellPrice: {
-    width: '20%',
+    width: '18%',
     textAlign: 'right',
+    flexShrink: 0,
   },
   tableCellIva: {
-    width: '10%',
+    width: '16%',
     textAlign: 'right',
+    flexShrink: 0,
   },
   tableCellTotal: {
-    width: '15%',
+    width: '18%',
     textAlign: 'right',
     fontWeight: 'bold',
+    flexShrink: 0,
   },
   totals: {
     width: '40%',
