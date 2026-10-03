@@ -63,6 +63,8 @@ export function RemisionForm({
 
   const { fields, append, remove } = useFieldArray({ control, name: 'items' });
 
+  const handleRetencionChange = (isSelected: boolean) => setValue('hasRetencion', isSelected === true);
+
   const watchedType = watch('type');
   const watchedItems = watch('items');
   const watchedIva = watch('ivaPercentage');
@@ -240,7 +242,7 @@ export function RemisionForm({
             name="hasRetencion"
             control={control}
             render={({ field }) => (
-              <Switch isSelected={field.value} onChange={(v) => field.onChange(v)}>
+              <Switch isSelected={field.value === true} onChange={handleRetencionChange}>
                 <Switch.Content>
                   <Switch.Control>
                     <Switch.Thumb />
