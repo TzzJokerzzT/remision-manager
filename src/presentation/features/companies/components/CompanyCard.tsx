@@ -1,7 +1,7 @@
 'use client';
 
 import { Avatar, Button, Chip } from '@heroui/react';
-import { motion } from 'framer-motion';
+import { m } from 'framer-motion';
 import { Building2, Mail, Pencil, Phone, Trash2 } from 'lucide-react';
 import type { Company } from '@/src/core/domain/entities/Company';
 import { listItemVariants } from '@/src/presentation/components/shared/AnimatedList';
@@ -22,7 +22,7 @@ export function CompanyCard({ company, onEdit, onDelete }: CompanyCardProps) {
   const isSelected = selectedCompany?.id === company.id;
 
   return (
-    <motion.div
+    <m.div
       layout
       variants={listItemVariants}
       exit={{ opacity: 0, scale: 0.96 }}
@@ -86,6 +86,6 @@ export function CompanyCard({ company, onEdit, onDelete }: CompanyCardProps) {
           <Trash2 className="h-4 w-4" />
         </Button>
       </div>
-    </motion.div>
+    </m.div>
   );
 }

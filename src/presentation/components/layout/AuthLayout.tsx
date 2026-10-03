@@ -1,6 +1,6 @@
 'use client';
 
-import { domAnimation, LazyMotion, motion } from 'framer-motion';
+import { m } from 'framer-motion';
 import { FileText } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { type ReactNode, useEffect } from 'react';
@@ -29,23 +29,21 @@ export function AuthLayout({
         <ThemeToggle />
       </div>
 
-      <LazyMotion features={domAnimation}>
-        <motion.div
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.35 }}
-          className="w-full max-w-md rounded-3xl border border-default-200 bg-background p-8 shadow-sm"
-        >
-          <div className="mb-6 flex flex-col items-center gap-2 text-center">
-            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-primary text-primary-foreground">
-              <FileText className="h-5 w-5" />
-            </div>
-            <h1 className="text-xl font-semibold tracking-tight">{title}</h1>
-            <p className="text-sm text-foreground/60">{subtitle}</p>
+      <m.div
+        initial={{ opacity: 0, y: 16 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.35 }}
+        className="w-full max-w-md rounded-3xl border border-default-200 bg-background p-8 shadow-sm"
+      >
+        <div className="mb-6 flex flex-col items-center gap-2 text-center">
+          <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-primary text-primary-foreground">
+            <FileText className="h-5 w-5" />
           </div>
-          {children}
-        </motion.div>
-      </LazyMotion>
+          <h1 className="text-xl font-semibold tracking-tight">{title}</h1>
+          <p className="text-sm text-foreground/60">{subtitle}</p>
+        </div>
+        {children}
+      </m.div>
     </div>
   );
 }

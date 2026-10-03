@@ -1,7 +1,7 @@
 'use client';
 
 import { Avatar, Button } from '@heroui/react';
-import { motion } from 'framer-motion';
+import { m } from 'framer-motion';
 import { IdCard, Mail, Pencil, Phone, Trash2, User } from 'lucide-react';
 import type { Client } from '@/src/core/domain/entities/Client';
 import { listItemVariants } from '@/src/presentation/components/shared/AnimatedList';
@@ -14,7 +14,7 @@ interface ClientCardProps {
 
 export function ClientCard({ client, onEdit, onDelete }: ClientCardProps) {
   return (
-    <motion.div
+    <m.div
       layout
       variants={listItemVariants}
       exit={{ opacity: 0, scale: 0.96 }}
@@ -60,6 +60,6 @@ export function ClientCard({ client, onEdit, onDelete }: ClientCardProps) {
           <Trash2 className="h-4 w-4" />
         </Button>
       </div>
-    </motion.div>
+    </m.div>
   );
 }

@@ -12,25 +12,8 @@ import { useClients } from '@/src/presentation/features/clients/hooks/useClients
 import { useDrivers } from '@/src/presentation/features/drivers/hooks/useDrivers';
 import { getErrorMessage } from '@/src/shared/utils/getErrorMessage';
 import { computeRemisionTotals } from '@/src/shared/utils/remisionTotals';
-
-const typeOptions = [
-  { id: 'priced', label: 'Con precio e IVA' },
-  { id: 'quantity_only', label: 'Solo cantidad' },
-];
-
-const documentTypeOptions = [
-  { id: 'remision', label: 'Remisión' },
-  { id: 'orden_compra', label: 'Orden de compra' },
-];
-
-interface RemisionFormProps {
-  companyId: string;
-  defaultValues?: Partial<RemisionFormValues>;
-  isSubmitting?: boolean;
-  submitError?: unknown;
-  submitLabel: string;
-  onSubmit: (values: RemisionFormValues) => void;
-}
+import { documentTypeOptions, typeOptions } from '../utils/constant';
+import type { RemisionFormProps } from '../utils/types';
 
 export function RemisionForm({
   companyId,

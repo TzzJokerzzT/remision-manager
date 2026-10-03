@@ -2,7 +2,7 @@
 
 import { Button } from '@heroui/react';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { motion } from 'framer-motion';
+import { m } from 'framer-motion';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
@@ -37,7 +37,7 @@ export function LoginForm() {
   };
 
   return (
-    <motion.form
+    <m.form
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3 }}
@@ -80,6 +80,6 @@ export function LoginForm() {
           Regístrate
         </Link>
       </p>
-    </motion.form>
+    </m.form>
   );
 }

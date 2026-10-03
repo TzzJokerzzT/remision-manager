@@ -1,7 +1,7 @@
 'use client';
 
 import { Button, Chip } from '@heroui/react';
-import { motion } from 'framer-motion';
+import { m } from 'framer-motion';
 import { ArrowLeft, ExternalLink, FileWarning } from 'lucide-react';
 import dynamic from 'next/dynamic';
 import Link from 'next/link';
@@ -113,7 +113,7 @@ export function RemisionDetail({ remisionId }: RemisionDetailProps) {
   const documentLabel = remision.documentType === 'orden_compra' ? 'Orden de compra' : 'Remisión';
 
   return (
-    <motion.div
+    <m.div
       initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.25 }}
@@ -230,6 +230,6 @@ export function RemisionDetail({ remisionId }: RemisionDetailProps) {
           )}
         </div>
       </div>
-    </motion.div>
+    </m.div>
   );
 }

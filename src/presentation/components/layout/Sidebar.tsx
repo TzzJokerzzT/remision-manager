@@ -1,6 +1,6 @@
 'use client';
 
-import { motion } from 'framer-motion';
+import { m } from 'framer-motion';
 import { FileText } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -33,7 +33,7 @@ export function Sidebar({ onNavigate }: SidebarProps) {
                 }`}
               >
                 {isActive && (
-                  <motion.div
+                  <m.div
                     layoutId="sidebar-active"
                     className="absolute inset-0 rounded-xl bg-primary/10"
                     transition={{ type: 'spring', stiffness: 350, damping: 30 }}

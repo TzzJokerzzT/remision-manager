@@ -39,6 +39,7 @@ import {
   useRemisiones,
   useUpdateRemision,
 } from '../hooks/useRemisiones';
+import { typeOptionsRemisionList } from '../utils/constant';
 import { RemisionForm } from './RemisionForm';
 
 function cleanPayload(values: RemisionFormValues) {
@@ -161,11 +162,6 @@ export function RemisionList() {
   };
   const hasActiveFilters =
     clientFilter != null || driverFilter != null || typeFilter != null || dateRange != null;
-
-  const typeOptions = [
-    { id: 'priced', name: 'Con precio + IVA' },
-    { id: 'quantity_only', name: 'Solo cantidad' },
-  ];
 
   // Filter function for Autocomplete.Filter
   const { contains } = useFilter({ sensitivity: 'base' });
@@ -320,7 +316,7 @@ export function RemisionList() {
                   <p className="px-2 py-1 text-sm text-foreground/50">Sin resultados</p>
                 )}
               >
-                {typeOptions.map((opt) => (
+                {typeOptionsRemisionList.map((opt) => (
                   <ListBox.Item key={opt.id} id={opt.id} textValue={opt.name}>
                     {opt.name}
                     <ListBox.ItemIndicator />
