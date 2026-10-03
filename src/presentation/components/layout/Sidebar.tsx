@@ -4,11 +4,8 @@ import { motion } from 'framer-motion';
 import { FileText } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import type { SidebarProps } from '../utils/types';
 import { navItems } from './navItems';
-
-interface SidebarProps {
-  onNavigate?: () => void;
-}
 
 export function Sidebar({ onNavigate }: SidebarProps) {
   const pathname = usePathname();
