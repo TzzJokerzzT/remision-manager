@@ -61,15 +61,35 @@ todavía está en `8af50ac`, así que la base de esta feature es `development`.
 
 | # | Task | Status | Evidence |
 | - | ---- | ------ | -------- |
-| 1 | Contrato: ítem en la entidad + schema con los dos refinamientos, sin `ivaPercentage` raíz | pending | — |
-| 2 | `remisionTotals` por ítem, espejando el backend (incluido `round2` con `toFixed`) | pending | — |
-| 3 | Helper de migración para ítems sin `hasIva` + tests | pending | — |
-| 4 | `RemisionForm`: control de IVA por ítem, sin campo global, preview de totales | pending | — |
-| 5 | `cleanPayload` y defaults de edición | pending | — |
-| 6 | PDF: columna de IVA por producto y totales | pending | — |
-| 7 | Detalle web: IVA por producto y totales | pending | — |
-| 8 | Actualizar los tests existentes y agregar cobertura nueva | pending | — |
-| 9 | Verificación integral (tests, typecheck, biome, build) | pending | — |
+| 1 | Contrato: ítem en la entidad + schema con los dos refinamientos, sin `ivaPercentage` raíz | done | `0519740` |
+| 2 | `remisionTotals` por ítem, espejando el backend (incluido `round2` con `toFixed`) | done | `0519740`; test-first con 8 casos en RED |
+| 3 | Helper de migración para ítems sin `hasIva` + tests | done | `0519740`; 7 casos |
+| 4 | `RemisionForm`: control de IVA por ítem, sin campo global, preview de totales | done | `0519740` |
+| 5 | `cleanPayload` y defaults de edición | done | `0519740` |
+| 6 | PDF: columna de IVA por producto y totales | done | `ece0117` |
+| 7 | Detalle web: IVA por producto y totales | done | `ece0117` |
+| 8 | Actualizar los tests existentes y agregar cobertura nueva | done | `0519740`; el body de ejemplo del usuario quedó anclado como test |
+| 9 | Verificación integral (tests, typecheck, biome, build) | done | ver abajo |
+
+## Resultado
+
+- **32 suites / 215 tests** (venían 32/193): +22 casos, incluidos los fixtures copiados del
+  backend y el ejemplo del usuario.
+- `bun run typecheck`, `bun run check` y `bun run build` limpios.
+- Dos work units: `0519740` (contrato, lógica, formulario y payload) y `ece0117` (PDF y detalle).
+- Limpieza: se eliminó el `ivaPercentage` raíz, ya muerto, de la entidad y de los dos payloads
+  del repositorio.
+
+## Qué probó cada cosa
+
+- **El redondeo coincide con el backend**: los fixtures de `remisionTotals.test.ts` se copiaron
+  de su test, incluido el caso que distingue redondear-por-ítem-y-sumar de sumar-y-redondear.
+- **La migración de datos viejos** tiene 7 casos: tasa recuperada, tasa no estándar, sin IVA,
+  ítems que ya declaran `hasIva`, ausencia de totales y división por cero.
+- **El contrato del backend** quedó anclado con el body de ejemplo del usuario como test, más
+  los dos refinamientos de coherencia por ítem.
+- **No verificado**: el render real del PDF en un navegador (no hay harness de browser); la
+  columna se verificó por tipos, build y revisión del markup.
 
 ## Verification plan
 
