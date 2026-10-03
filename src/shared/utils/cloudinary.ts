@@ -14,6 +14,52 @@
 const CLOUD_NAME = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
 const UPLOAD_PRESET = process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET;
 
+const CLOUDINARY_HOST = 'res.cloudinary.com/';
+const CLOUDINARY_IMAGE_UPLOAD_SEGMENT = '/image/upload/';
+
+export interface CloudinaryImageOptions {
+  /** Ancho de entrega en píxeles. */
+  width?: number;
+  /** Alto de entrega en píxeles. */
+  height?: number;
+  /** Modo de recorte; solo tiene efecto junto con width/height. */
+  crop?: 'fill' | 'fit' | 'scale' | 'thumb';
+}
+
+/**
+ * Devuelve la URL de entrega de una imagen de Cloudinary con las optimizaciones
+ * automáticas (`f_auto,q_auto`) y el tamaño pedido, insertando la transformación
+ * justo después de `/image/upload/`.
+ *
+ * El original nunca se modifica ni se guarda transformado: esto se aplica al
+ * renderizar, así también mejora los `logoUrl` ya persistidos sin transformación.
+ *
+ * Si la URL ya traía una transformación, la nuestra se antepone como
+ * transformación encadenada (Cloudinary las aplica en orden).
+ *
+ * Cualquier URL que no sea de imagen de Cloudinary (otro host, `blob:`, `data:`,
+ * o una entrega `/raw/upload/` o `/video/upload/`) se devuelve intacta.
+ */
+export function cloudinaryImageUrl(
+  url: string | null | undefined,
+  options: CloudinaryImageOptions = {}
+): string | undefined {
+  const trimmed = url?.trim();
+  if (!trimmed) return undefined;
+  if (!trimmed.includes(CLOUDINARY_HOST)) return trimmed;
+
+  const segmentIndex = trimmed.indexOf(CLOUDINARY_IMAGE_UPLOAD_SEGMENT);
+  if (segmentIndex === -1) return trimmed;
+
+  const params = ['f_auto', 'q_auto'];
+  if (Number.isFinite(options.width)) params.push(`w_${options.width}`);
+  if (Number.isFinite(options.height)) params.push(`h_${options.height}`);
+  if (options.crop !== undefined) params.push(`c_${options.crop}`);
+
+  const insertAt = segmentIndex + CLOUDINARY_IMAGE_UPLOAD_SEGMENT.length;
+  return `${trimmed.slice(0, insertAt)}${params.join(',')}/${trimmed.slice(insertAt)}`;
+}
+
 export class CloudinaryUploadError extends Error {}
 
 export interface CloudinaryUploadResult {
