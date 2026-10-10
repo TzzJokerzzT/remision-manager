@@ -43,7 +43,7 @@ function refineItemIva(
 export const remisionSchema = z
   .object({
     type: z.enum(['priced', 'quantity_only']),
-    documentType: z.enum(['remision', 'orden_compra']).default('remision'),
+    documentType: z.enum(['remision', 'orden_compra', 'cotizacion']).default('remision'),
     companyId: z.string().min(1, 'Selecciona una empresa'),
     clientId: z.string().min(1, 'Selecciona un cliente'),
     driverId: z.string().optional().or(z.literal('')),
