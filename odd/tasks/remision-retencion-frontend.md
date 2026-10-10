@@ -10,7 +10,7 @@ Alinear el frontend de remisiones con el contrato ya implementado en `remisiones
 
 ## Backend contract (source of truth)
 
-- `src/domain/entities/Remision.ts`: `DocumentType = 'remision' | 'orden_compra'`,
+- `src/domain/entities/Remision.ts`: `DocumentType = 'remision' | 'orden_compra' | 'cotizacion`,
   `hasRetencion: boolean`, `retencionPercentage?`, `retencionValue?`.
 - `src/application/dtos/remision.dto.ts`: `documentType` con default `'remision'`;
   `hasRetencion` default `false`; `retencionPercentage` 0–100 requerido cuando
