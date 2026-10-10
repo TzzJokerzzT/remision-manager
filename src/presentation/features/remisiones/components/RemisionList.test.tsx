@@ -5,7 +5,7 @@ import type { Client } from '@/src/core/domain/entities/Client';
 import type { Company } from '@/src/core/domain/entities/Company';
 import type { Driver } from '@/src/core/domain/entities/Driver';
 import type { Remision } from '@/src/core/domain/entities/Remision';
-import { useClients } from '@/src/presentation/features/clients/hooks/useClients';
+import { useClients, useInfiniteClients } from '@/src/presentation/features/clients/hooks/useClients';
 import { useDrivers } from '@/src/presentation/features/drivers/hooks/useDrivers';
 import { RemisionList } from '@/src/presentation/features/remisiones/components/RemisionList';
 import {
@@ -34,6 +34,7 @@ jest.mock('@/src/presentation/stores/company.store', () => ({
 
 jest.mock('@/src/presentation/features/clients/hooks/useClients', () => ({
   useClients: jest.fn(),
+  useInfiniteClients: jest.fn(),
 }));
 
 jest.mock('@/src/presentation/features/drivers/hooks/useDrivers', () => ({
@@ -45,6 +46,7 @@ const useCreateRemisionMock = useCreateRemision as jest.Mock;
 const useUpdateRemisionMock = useUpdateRemision as jest.Mock;
 const useDeleteRemisionMock = useDeleteRemision as jest.Mock;
 const useCompanyStoreMock = useCompanyStore as unknown as jest.Mock;
+const useInfiniteClientsMock = useInfiniteClients as jest.Mock;
 const useClientsMock = useClients as jest.Mock;
 const useDriversMock = useDrivers as jest.Mock;
 
@@ -100,7 +102,13 @@ const remision: Remision = {
 
 function renderList({ items = [remision], totalPages = 1 } = {}) {
   useCompanyStoreMock.mockReturnValue({ selectedCompany: company });
-  useClientsMock.mockReturnValue({ data: { items: [client] }, isLoading: false });
+  useClientsMock.mockReturnValue({ data: [client], isLoading: false });
+  useInfiniteClientsMock.mockReturnValue({
+    data: { pages: [{ items: [client] }] },
+    fetchNextPage: jest.fn(),
+    hasNextPage: false,
+    isFetchingNextPage: false,
+  });
   useDriversMock.mockReturnValue({ data: { items: [driver] }, isLoading: false });
   useRemisionesMock.mockReturnValue({
     data: { items, total: items.length, limit: 10, page: 1, totalPages },
@@ -125,6 +133,7 @@ describe('RemisionList', () => {
     useUpdateRemisionMock.mockReset();
     useDeleteRemisionMock.mockReset();
     useCompanyStoreMock.mockReset();
+    useInfiniteClientsMock.mockReset();
     useClientsMock.mockReset();
     useDriversMock.mockReset();
   });

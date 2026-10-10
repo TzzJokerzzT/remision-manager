@@ -1,4 +1,4 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { isAxiosError } from 'axios';
 import { clientUseCases } from '@/src/core/di/container';
 import type {
@@ -7,6 +7,8 @@ import type {
 } from '@/src/core/domain/repositories/IClientRepository';
 import { showToast } from '@/src/presentation/components/shared/Toast';
 import { queryKeys } from '@/src/shared/constants/queryKeys';
+
+const INFINITE_PAGE_SIZE = 20;
 
 export function useClients(companyId?: string, search?: string, page: number = 1, limit: number = 10) {
   return useQuery({
@@ -29,6 +31,17 @@ export function useCreateClient() {
         (error as Error).message;
       showToast(msg, 'error');
     },
+  });
+}
+
+export function useInfiniteClients(companyId?: string, search?: string) {
+  return useInfiniteQuery({
+    // Prefijo 'clients' para que invalidateQueries({ queryKey: ['clients'] }) también lo refresque
+    queryKey: ['clients', 'infinite', companyId, search],
+    queryFn: ({ pageParam }) => clientUseCases.list(companyId, search, pageParam, INFINITE_PAGE_SIZE),
+    initialPageParam: 1,
+    getNextPageParam: (lastPage) => (lastPage.page < lastPage.totalPages ? lastPage.page + 1 : undefined),
+    enabled: !!companyId,
   });
 }
 
