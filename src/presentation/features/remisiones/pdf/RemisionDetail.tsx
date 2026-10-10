@@ -15,6 +15,10 @@ import { useCompanies } from '@/src/presentation/features/companies/hooks/useCom
 import { useDrivers } from '@/src/presentation/features/drivers/hooks/useDrivers';
 import { withInferredItemIva } from '@/src/shared/utils/remisionIva';
 import { useRemision } from '../hooks/useRemisiones';
+import { DOCUMENT_CONFIG } from '../utils/constant';
+import { formatCurrency, formatDate } from '../utils/helpers';
+import type { RemisionDetailProps } from '../utils/types';
+import { ViewerSkeleton } from './ViewerSkeleton';
 
 // import { RemisionDocument } from './RemisionDocument';
 
@@ -23,26 +27,6 @@ const RemisionDocument = dynamic(() => import('./RemisionDocument').then((mod) =
   ssr: false,
   loading: () => <ViewerSkeleton />,
 });
-
-function ViewerSkeleton() {
-  return (
-    <div className="border-default-200 bg-default-100 dark:bg-default-50/5 flex h-[70vh] items-center justify-center rounded-2xl border">
-      <Spinner />
-    </div>
-  );
-}
-
-function formatCurrency(value: number) {
-  return value.toLocaleString('es-CO', { style: 'currency', currency: 'COP' });
-}
-
-function formatDate(value: string) {
-  return new Date(value).toLocaleDateString('es-CO', { day: '2-digit', month: 'long', year: 'numeric' });
-}
-
-interface RemisionDetailProps {
-  remisionId: string;
-}
 
 export function RemisionDetail({ remisionId }: RemisionDetailProps) {
   const { data: remision, isLoading: isLoadingRemision, error } = useRemision(remisionId);
@@ -111,7 +95,7 @@ export function RemisionDetail({ remisionId }: RemisionDetailProps) {
   }
 
   const isPriced = remision.type === 'priced';
-  const documentLabel = remision.documentType === 'orden_compra' ? 'Orden de compra' : 'Remisión';
+  const documentLabel = DOCUMENT_CONFIG[remision.documentType].label;
 
   // Completa hasIva/ivaValue en remisiones guardadas antes del IVA por producto.
   const items = withInferredItemIva(remision.items, {

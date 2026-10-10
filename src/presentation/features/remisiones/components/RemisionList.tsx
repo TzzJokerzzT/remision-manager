@@ -41,31 +41,8 @@ import {
   useUpdateRemision,
 } from '../hooks/useRemisiones';
 import { typeOptionsRemisionList } from '../utils/constant';
+import { cleanPayload } from '../utils/helpers';
 import { RemisionForm } from './RemisionForm';
-
-function cleanPayload(values: RemisionFormValues) {
-  const isPriced = values.type === 'priced';
-
-  return {
-    type: values.type,
-    documentType: values.documentType,
-    companyId: values.companyId,
-    clientId: values.clientId,
-    driverId: values.driverId || undefined,
-    items: values.items.map((item) => ({
-      description: item.description,
-      quantity: item.quantity,
-      unitPrice: isPriced ? item.unitPrice : undefined,
-      // El IVA es por producto. En quantity_only el DTO del backend igual exige `hasIva`, y
-      // con true exigiría una tasa > 0 que en ese tipo no aplica: va en false y sin tasa.
-      hasIva: isPriced ? item.hasIva === true : false,
-      ivaPercentage: isPriced && item.hasIva === true ? item.ivaPercentage : undefined,
-    })),
-    hasRetencion: isPriced ? values.hasRetencion : false,
-    retencionPercentage: values.retencionPercentage,
-    notes: values.notes || undefined,
-  };
-}
 
 export function RemisionList() {
   const { selectedCompany } = useCompanyStore();
