@@ -22,6 +22,9 @@ export interface AppSelectProps {
   isDisabled?: boolean;
   fullWidth?: boolean;
   className?: string;
+  onLoadMore?: () => void;
+  isLoadingMore?: boolean;
+  hasMore?: boolean;
 }
 
 // ===============================================

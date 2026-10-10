@@ -3,12 +3,13 @@
 import { Button, Switch } from '@heroui/react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Plus, Trash2 } from 'lucide-react';
+import { useMemo } from 'react';
 import { Controller, useFieldArray, useForm } from 'react-hook-form';
 import type { z } from 'zod';
 import { type RemisionFormValues, remisionSchema } from '@/src/core/application/dtos/remision.dto';
 import { AppSelect } from '@/src/presentation/components/ui/AppSelect';
 import { FormField } from '@/src/presentation/components/ui/FormField';
-import { useClients } from '@/src/presentation/features/clients/hooks/useClients';
+import { useInfiniteClients } from '@/src/presentation/features/clients/hooks/useClients';
 import { useDrivers } from '@/src/presentation/features/drivers/hooks/useDrivers';
 import { getErrorMessage } from '@/src/shared/utils/getErrorMessage';
 import { computeRemisionTotals } from '@/src/shared/utils/remisionTotals';
@@ -24,7 +25,21 @@ export function RemisionForm({
   submitLabel,
   onSubmit,
 }: RemisionFormProps) {
-  const { data: clients } = useClients(companyId);
+  const {
+    data: clientsData,
+    fetchNextPage: fetchMoreClients,
+    hasNextPage: hasMoreClients,
+    isFetchingNextPage: isFetchingMoreClients,
+  } = useInfiniteClients(companyId);
+
+  const clientOptions = useMemo(
+    () =>
+      (clientsData?.pages.flatMap((p) => p.items) ?? []).map((c) => ({
+        id: c.id,
+        label: c.name,
+      })),
+    [clientsData]
+  );
   const { data: drivers } = useDrivers(companyId);
 
   const {
@@ -63,7 +78,7 @@ export function RemisionForm({
     watchedRetencionPct
   );
 
-  const clientOptions = (clients?.items ?? []).map((c) => ({ id: c.id, label: c.name }));
+  // const clientOptions = (clients?.items ?? []).map((c) => ({ id: c.id, label: c.name }));
   const driverOptions = (drivers?.items ?? []).map((d) => ({ id: d.id, label: d.name }));
 
   return (
@@ -117,6 +132,9 @@ export function RemisionForm({
               selectedKey={field.value || null}
               onSelectionChange={(key) => field.onChange(key ?? '')}
               isInvalid={!!errors.clientId}
+              onLoadMore={fetchMoreClients}
+              hasMore={!!hasMoreClients}
+              isLoadingMore={isFetchingMoreClients}
               errorMessage={errors.clientId?.message}
               isDisabled={clientOptions.length === 0}
             />

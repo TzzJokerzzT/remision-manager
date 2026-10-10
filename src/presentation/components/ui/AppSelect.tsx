@@ -1,7 +1,8 @@
 'use client';
 
 import { ListBoxItemRoot, ListBoxRoot, Select } from '@heroui/react';
-import { ChevronDown } from 'lucide-react';
+import { ChevronDown, Loader2 } from 'lucide-react';
+import { useEffect, useRef } from 'react';
 import type { AppSelectOption, AppSelectProps } from '../utils/types';
 
 export function AppSelect({
@@ -15,7 +16,27 @@ export function AppSelect({
   isDisabled,
   fullWidth = true,
   className,
+  onLoadMore,
+  isLoadingMore = false,
+  hasMore = false,
 }: AppSelectProps) {
+  const sentinelRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const el = sentinelRef.current;
+    if (!el || !onLoadMore || !hasMore || isLoadingMore) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) onLoadMore();
+      },
+      { threshold: 0.1 }
+    );
+
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [onLoadMore, hasMore, isLoadingMore]);
+
   return (
     <div className="flex flex-col gap-1.5">
       {label && <span className="text-sm font-medium text-foreground/80">{label}</span>}
@@ -38,7 +59,8 @@ export function AppSelect({
             <ChevronDown className="h-4 w-4 opacity-60" />
           </Select.Indicator>
         </Select.Trigger>
-        <Select.Popover className="min-w-(--trigger-width) rounded-lg border border-default-200 bg-background shadow-lg p-1">
+
+        <Select.Popover className="min-w-(--trigger-width) max-h-64 overflow-auto rounded-lg border border-default-200 bg-background shadow-lg p-1">
           <ListBoxRoot items={options} className="outline-none">
             {(item: AppSelectOption) => (
               <ListBoxItemRoot
@@ -51,6 +73,13 @@ export function AppSelect({
               </ListBoxItemRoot>
             )}
           </ListBoxRoot>
+
+          {/* Sentinel fuera del ListBox para que no interfiera con la selección */}
+          {hasMore && (
+            <div ref={sentinelRef} className="flex justify-center py-2">
+              {isLoadingMore && <Loader2 className="h-4 w-4 animate-spin opacity-60" />}
+            </div>
+          )}
         </Select.Popover>
       </Select.Root>
       {isInvalid && errorMessage && <span className="text-xs text-danger">{errorMessage}</span>}
