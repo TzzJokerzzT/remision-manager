@@ -4,11 +4,19 @@ import type { RemisionFormValues } from '@/src/core/application/dtos/remision.dt
 import { RemisionForm } from '@/src/presentation/features/remisiones/components/RemisionForm';
 
 jest.mock('@/src/presentation/features/clients/hooks/useClients', () => ({
-  useClients: jest.fn(() => ({ data: { items: [] }, isLoading: false })),
+  useInfiniteClients: jest.fn(() => ({
+    data: { pages: [{ items: [{ id: 'client-1', name: 'Cliente Uno' }] }] },
+    fetchNextPage: jest.fn(),
+    hasNextPage: false,
+    isFetchingNextPage: false,
+  })),
 }));
 
 jest.mock('@/src/presentation/features/drivers/hooks/useDrivers', () => ({
-  useDrivers: jest.fn(() => ({ data: { items: [] }, isLoading: false })),
+  useDrivers: jest.fn(() => ({
+    data: { items: [{ id: 'driver-1', name: 'Conductor Uno' }] },
+    isLoading: false,
+  })),
 }));
 
 /**
