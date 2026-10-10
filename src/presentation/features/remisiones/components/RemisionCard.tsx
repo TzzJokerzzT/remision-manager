@@ -5,19 +5,13 @@ import { m } from 'framer-motion';
 import { Calendar, FileText, Pencil, Trash2, Truck, User } from 'lucide-react';
 import Link from 'next/link';
 import { listItemVariants } from '@/src/presentation/components/shared/AnimatedList';
+import { DOCUMENT_CONFIG } from '../utils/constant';
+import { formatCurrency, formatDate } from '../utils/helpers';
 import type { RemisionCardProps } from '../utils/types';
-
-function formatCurrency(value: number) {
-  return value.toLocaleString('es-CO', { style: 'currency', currency: 'COP' });
-}
-
-function formatDate(value: string) {
-  return new Date(value).toLocaleDateString('es-CO', { day: '2-digit', month: 'short', year: 'numeric' });
-}
 
 export function RemisionCard({ remision, client, driver, onEdit, onDelete }: RemisionCardProps) {
   const isPriced = remision.type === 'priced';
-  const documentLabel = remision.documentType === 'orden_compra' ? 'Orden de compra' : 'Remisión';
+  const documentLabel = DOCUMENT_CONFIG[remision.documentType].label;
 
   return (
     <m.div
@@ -49,7 +43,7 @@ export function RemisionCard({ remision, client, driver, onEdit, onDelete }: Rem
           <Truck className="h-3.5 w-3.5" /> {driver?.name ?? '—'}
         </span>
         <span className="flex items-center gap-1.5">
-          <Calendar className="h-3.5 w-3.5" /> {formatDate(remision.createdAt)}
+          <Calendar className="h-3.5 w-3.5" /> {formatDate(remision.createdAt, 'short')}
         </span>
       </div>
 

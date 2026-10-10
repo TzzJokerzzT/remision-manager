@@ -1,10 +1,9 @@
 import { Document, Font, Image, Page, PDFViewer, Text, View } from '@react-pdf/renderer';
-import type { Client } from '@/src/core/domain/entities/Client';
-import type { Company } from '@/src/core/domain/entities/Company';
-import type { Driver } from '@/src/core/domain/entities/Driver';
-import type { Remision } from '@/src/core/domain/entities/Remision';
 import { cloudinaryImageUrl } from '@/src/shared/utils/cloudinary';
 import { withInferredItemIva } from '@/src/shared/utils/remisionIva';
+import { DOCUMENT_CONFIG, PDF_LOGO } from '../utils/constant';
+import { formatDate } from '../utils/helpers';
+import type { RemisionDocumentProps } from '../utils/types';
 import { styles } from './styles';
 
 // Registrar fuentes (opcional, puedes ajustar según tus necesidades)
@@ -19,16 +18,6 @@ Font.register({
   ],
 });
 
-// El logo se imprime a 5rem (80px): 256px da margen de sobra para impresión.
-const PDF_LOGO = { width: 256 } as const;
-
-interface RemisionDocumentProps {
-  remision: Remision;
-  company: Company;
-  client: Client;
-  driver?: Driver;
-}
-
 export function RemisionDocument({ remision, company, client, driver }: RemisionDocumentProps) {
   const isPriced = remision?.type === 'priced';
 
@@ -42,9 +31,7 @@ export function RemisionDocument({ remision, company, client, driver }: Remision
     return `$ ${value.toLocaleString('es-CO', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`;
   };
 
-  const formatDate = (value: string) => {
-    return new Date(value).toLocaleDateString('es-CO', { day: '2-digit', month: 'long', year: 'numeric' });
-  };
+  const documentLabel = DOCUMENT_CONFIG[remision.documentType].label;
 
   return (
     <div className="h-220 border-2 rounded-lg border-[#7a7d85] p-2">
@@ -66,9 +53,7 @@ export function RemisionDocument({ remision, company, client, driver }: Remision
                 </View>
               </View>
               <View>
-                <Text style={styles.title}>
-                  {remision.documentType === 'orden_compra' ? 'ORDEN DE COMPRA' : 'REMISIÓN'}
-                </Text>
+                <Text style={styles.title}>{documentLabel}</Text>
                 <Text style={styles.badge}>No. {String(remision?.consecutive).padStart(5, '0')}</Text>
                 <Text style={styles.subtitle}>{formatDate(remision?.createdAt)}</Text>
                 <Text style={styles.subtitle}>{isPriced ? 'Con precio + IVA' : 'Solo cantidad'}</Text>

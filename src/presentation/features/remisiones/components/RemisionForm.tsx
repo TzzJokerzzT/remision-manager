@@ -12,22 +12,9 @@ import { useClients } from '@/src/presentation/features/clients/hooks/useClients
 import { useDrivers } from '@/src/presentation/features/drivers/hooks/useDrivers';
 import { getErrorMessage } from '@/src/shared/utils/getErrorMessage';
 import { computeRemisionTotals } from '@/src/shared/utils/remisionTotals';
-import { documentTypeOptions, typeOptions } from '../utils/constant';
+import { DEFAULT_IVA_PERCENTAGE, documentTypeOptions, typeOptions } from '../utils/constant';
+import { emptyItem } from '../utils/helpers';
 import type { RemisionFormProps } from '../utils/types';
-
-/** IVA por defecto de un producto nuevo. Es editable por ítem. */
-const DEFAULT_IVA_PERCENTAGE = 19;
-
-/** Ítem nuevo: gravado al 19 % por defecto, y se puede apagar o cambiar por producto. */
-function emptyItem() {
-  return {
-    description: '',
-    quantity: 1,
-    unitPrice: 0,
-    hasIva: true,
-    ivaPercentage: DEFAULT_IVA_PERCENTAGE,
-  };
-}
 
 export function RemisionForm({
   companyId,
