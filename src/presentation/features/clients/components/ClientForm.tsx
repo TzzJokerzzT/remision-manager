@@ -23,11 +23,16 @@ export function ClientForm({
     register,
     control,
     handleSubmit,
+    watch,
     formState: { errors },
   } = useForm<ClientFormValues>({
     resolver: zodResolver(clientSchema),
     defaultValues,
   });
+
+  // Mismo criterio que en RemisionForm: se evalúa el schema del resolver, no `formState.isValid`,
+  // para no mostrar errores de campos que el usuario todavía no tocó.
+  const canSubmit = clientSchema.safeParse(watch()).success;
 
   const companyOptions = (companies?.items ?? []).map((c) => ({ id: c.id, label: c.name }));
 
@@ -90,10 +95,14 @@ export function ClientForm({
         </p>
       ) : null}
 
+      {!canSubmit && !isSubmitting ? (
+        <p className="text-xs text-foreground/50">Completa los campos requeridos para continuar.</p>
+      ) : null}
+
       <Button
         type="submit"
         fullWidth
-        isDisabled={isSubmitting}
+        isDisabled={isSubmitting || !canSubmit}
         className="mt-2 self-start bg-primary gap-2 transition-color duration-300 ease-in-out hover:bg-primary/70"
       >
         {isSubmitting ? 'Guardando...' : submitLabel}

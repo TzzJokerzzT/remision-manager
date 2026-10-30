@@ -10,7 +10,7 @@ import { type RemisionFormValues, remisionSchema } from '@/src/core/application/
 import { AppSelect } from '@/src/presentation/components/ui/AppSelect';
 import { FormField } from '@/src/presentation/components/ui/FormField';
 import { useInfiniteClients } from '@/src/presentation/features/clients/hooks/useClients';
-import { useDrivers } from '@/src/presentation/features/drivers/hooks/useDrivers';
+import { useAllDrivers } from '@/src/presentation/features/drivers/hooks/useDrivers';
 import { getErrorMessage } from '@/src/shared/utils/getErrorMessage';
 import { computeRemisionTotals } from '@/src/shared/utils/remisionTotals';
 import { DEFAULT_IVA_PERCENTAGE, documentTypeOptions, typeOptions } from '../utils/constant';
@@ -40,7 +40,7 @@ export function RemisionForm({
       })),
     [clientsData]
   );
-  const { data: drivers } = useDrivers(companyId);
+  const { data: allDrivers } = useAllDrivers(companyId);
 
   const {
     register,
@@ -69,6 +69,11 @@ export function RemisionForm({
   const watchedRetencionPct = watch('retencionPercentage');
   const isPriced = watchedType === 'priced';
 
+  // El submit queda deshabilitado hasta que el schema completo pase. Se evalúa contra el mismo
+  // schema del resolver y no contra `formState.isValid` para no mostrar errores de campos que
+  // el usuario todavía no tocó.
+  const canSubmit = remisionSchema.safeParse(watch()).success;
+
   // El IVA sale de los ítems, no de un campo global: `ivaValue` es la suma de los IVA por
   // producto y `subtotal` la suma de los productos antes de IVA.
   const totals = computeRemisionTotals(
@@ -79,7 +84,7 @@ export function RemisionForm({
   );
 
   // const clientOptions = (clients?.items ?? []).map((c) => ({ id: c.id, label: c.name }));
-  const driverOptions = (drivers?.items ?? []).map((d) => ({ id: d.id, label: d.name }));
+  const driverOptions = (allDrivers ?? []).map((d) => ({ id: d.id, label: d.name }));
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-5">
@@ -327,10 +332,14 @@ export function RemisionForm({
         </p>
       ) : null}
 
+      {!canSubmit && !isSubmitting ? (
+        <p className="text-xs text-foreground/50">Completa los campos requeridos para continuar.</p>
+      ) : null}
+
       <Button
         type="submit"
         fullWidth
-        isDisabled={isSubmitting}
+        isDisabled={isSubmitting || !canSubmit}
         className="mt-2 self-start bg-primary gap-2 transition-color duration-300 ease-in-out hover:bg-primary/70"
       >
         {isSubmitting ? 'Guardando...' : submitLabel}
