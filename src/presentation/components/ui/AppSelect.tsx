@@ -2,7 +2,7 @@
 
 import { ListBoxItemRoot, ListBoxRoot, Select } from '@heroui/react';
 import { ChevronDown, Loader2 } from 'lucide-react';
-import { useEffect, useRef } from 'react';
+import { useEffect, useState } from 'react';
 import type { AppSelectOption, AppSelectProps } from '../utils/types';
 
 export function AppSelect({
@@ -20,11 +20,13 @@ export function AppSelect({
   isLoadingMore = false,
   hasMore = false,
 }: AppSelectProps) {
-  const sentinelRef = useRef<HTMLDivElement>(null);
+  const [sentinel, setSentinel] = useState<HTMLDivElement | null>(null);
 
+  // El popover de react-aria no monta su contenido hasta abrirlo, así que el centinela
+  // aparece recién ahí: por eso el nodo vive en estado (callback ref) y no en un useRef.
+  // Con un ref, el efecto corría con `null` y el observer nunca se creaba.
   useEffect(() => {
-    const el = sentinelRef.current;
-    if (!el || !onLoadMore || !hasMore || isLoadingMore) return;
+    if (!sentinel || !onLoadMore || !hasMore || isLoadingMore) return;
 
     const observer = new IntersectionObserver(
       ([entry]) => {
@@ -33,9 +35,9 @@ export function AppSelect({
       { threshold: 0.1 }
     );
 
-    observer.observe(el);
+    observer.observe(sentinel);
     return () => observer.disconnect();
-  }, [onLoadMore, hasMore, isLoadingMore]);
+  }, [sentinel, onLoadMore, hasMore, isLoadingMore]);
 
   return (
     <div className="flex flex-col gap-1.5">
@@ -76,7 +78,7 @@ export function AppSelect({
 
           {/* Sentinel fuera del ListBox para que no interfiera con la selección */}
           {hasMore && (
-            <div ref={sentinelRef} className="flex justify-center py-2">
+            <div ref={setSentinel} data-testid="app-select-load-more" className="flex justify-center py-2">
               {isLoadingMore && <Loader2 className="h-4 w-4 animate-spin opacity-60" />}
             </div>
           )}
