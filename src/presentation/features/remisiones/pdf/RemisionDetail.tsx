@@ -10,9 +10,9 @@ import type { Client } from '@/src/core/domain/entities/Client';
 import type { Company } from '@/src/core/domain/entities/Company';
 import { EmptyState } from '@/src/presentation/components/shared/EmptyState';
 import { Spinner } from '@/src/presentation/components/shared/Spinner';
-import { useClients } from '@/src/presentation/features/clients/hooks/useClients';
+import { useClient } from '@/src/presentation/features/clients/hooks/useClients';
 import { useCompanies } from '@/src/presentation/features/companies/hooks/useCompanies';
-import { useDrivers } from '@/src/presentation/features/drivers/hooks/useDrivers';
+import { useDriver } from '@/src/presentation/features/drivers/hooks/useDrivers';
 import { withInferredItemIva } from '@/src/shared/utils/remisionIva';
 import { useRemision } from '../hooks/useRemisiones';
 import { DOCUMENT_CONFIG } from '../utils/constant';
@@ -31,8 +31,11 @@ const RemisionDocument = dynamic(() => import('./RemisionDocument').then((mod) =
 export function RemisionDetail({ remisionId }: RemisionDetailProps) {
   const { data: remision, isLoading: isLoadingRemision, error } = useRemision(remisionId);
   const { data: companies } = useCompanies();
-  const { data: clients } = useClients(remision?.companyId);
-  const { data: drivers } = useDrivers(remision?.companyId);
+  // El cliente y el conductor se resuelven por id: `GET /clients` y `GET /drivers` paginan y
+  // ordenan de más viejo a más nuevo, así que buscarlos en una página deja afuera a los
+  // registros recién creados.
+  const { data: foundClient, isLoading: isLoadingClient } = useClient(remision?.clientId);
+  const { data: driver, isLoading: isLoadingDriver } = useDriver(remision?.driverId);
 
   const company = useMemo(() => {
     const foundCompany = companies?.items.find((c) => c.id === remision?.companyId);
@@ -52,7 +55,6 @@ export function RemisionDetail({ remisionId }: RemisionDetailProps) {
   }, [companies, remision]);
 
   const client = useMemo(() => {
-    const foundClient = clients?.items.find((c) => c.id === remision?.clientId);
     if (foundClient) return foundClient;
     return {
       id: '',
@@ -65,11 +67,9 @@ export function RemisionDetail({ remisionId }: RemisionDetailProps) {
       createdAt: '',
       updatedAt: '',
     } as Client;
-  }, [clients, remision]);
+  }, [foundClient]);
 
-  const driver = useMemo(() => drivers?.items?.find((d) => d.id === remision?.driverId), [drivers, remision]);
-
-  if (isLoadingRemision) {
+  if (isLoadingRemision || isLoadingClient || isLoadingDriver) {
     return (
       <div className="flex justify-center py-20">
         <Spinner />

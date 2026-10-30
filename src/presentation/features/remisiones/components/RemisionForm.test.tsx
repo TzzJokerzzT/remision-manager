@@ -13,8 +13,8 @@ jest.mock('@/src/presentation/features/clients/hooks/useClients', () => ({
 }));
 
 jest.mock('@/src/presentation/features/drivers/hooks/useDrivers', () => ({
-  useDrivers: jest.fn(() => ({
-    data: { items: [{ id: 'driver-1', name: 'Conductor Uno' }] },
+  useAllDrivers: jest.fn(() => ({
+    data: [{ id: 'driver-1', name: 'Conductor Uno' }],
     isLoading: false,
   })),
 }));
@@ -118,7 +118,31 @@ describe('RemisionForm', () => {
     expect(screen.queryByText('Subtotal')).not.toBeInTheDocument();
   });
 
-  it('muestra el error del schema al enviar sin precio unitario (valueAsNumber → NaN)', async () => {
+  /**
+   * El botón queda deshabilitado hasta que el schema completo pase. Antes se podía enviar un
+   * formulario a medias y el usuario se enteraba recién con los errores del submit.
+   */
+  it('mantiene el submit deshabilitado hasta completar los campos requeridos', async () => {
+    const user = userEvent.setup();
+    renderForm();
+
+    const submit = screen.getByRole('button', { name: 'Crear remisión' });
+    expect(submit).toBeDisabled();
+    expect(screen.getByText('Completa los campos requeridos para continuar.')).toBeInTheDocument();
+
+    // Falta el cliente: con la descripción sola todavía no alcanza.
+    await user.type(screen.getByLabelText('Descripción'), 'Cemento');
+    expect(submit).toBeDisabled();
+
+    const clientField = screen.getByText('Cliente').closest('div') as HTMLElement;
+    await user.click(within(clientField).getByRole('button'));
+    await user.click(await screen.findByText('Cliente Uno'));
+
+    expect(submit).toBeEnabled();
+    expect(screen.queryByText('Completa los campos requeridos para continuar.')).not.toBeInTheDocument();
+  });
+
+  it('mantiene el submit bloqueado cuando el precio unitario quedó vacío (valueAsNumber → NaN)', async () => {
     const user = userEvent.setup();
     const onSubmit = jest.fn<void, [values: RemisionFormValues]>();
     renderForm(
@@ -130,12 +154,17 @@ describe('RemisionForm', () => {
       onSubmit
     );
 
-    await user.click(screen.getByRole('button', { name: 'Crear remisión' }));
-
-    // TODO(bug): el refinamiento "Cada ítem debe tener un precio unitario…" nunca se alcanza:
-    // el input con `valueAsNumber` entrega NaN y `z.number()` falla antes que el refinamiento.
-    expect(await screen.findByText(/Invalid input: expected number, received NaN/i)).toBeInTheDocument();
+    // TODO(bug): el input con `valueAsNumber` entrega NaN, así que `z.number()` falla antes de
+    // llegar al refinamiento "Cada ítem debe tener un precio unitario…". El submit deshabilitado
+    // bloquea el envío, pero tampoco muestra el error: el usuario solo ve que no puede continuar.
+    const submit = screen.getByRole('button', { name: 'Crear remisión' });
+    expect(submit).toBeDisabled();
+    expect(screen.getByText('Completa los campos requeridos para continuar.')).toBeInTheDocument();
     expect(onSubmit).not.toHaveBeenCalled();
+
+    // Con un precio válido el schema pasa y el submit se habilita.
+    await user.type(screen.getByLabelText('Precio unitario'), '50');
+    expect(submit).toBeEnabled();
   });
 
   it('entrega los valores parseados con documentType por defecto, hasRetencion booleano e IVA por ítem', async () => {

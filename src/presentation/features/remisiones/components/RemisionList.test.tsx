@@ -5,8 +5,12 @@ import type { Client } from '@/src/core/domain/entities/Client';
 import type { Company } from '@/src/core/domain/entities/Company';
 import type { Driver } from '@/src/core/domain/entities/Driver';
 import type { Remision } from '@/src/core/domain/entities/Remision';
-import { useClients, useInfiniteClients } from '@/src/presentation/features/clients/hooks/useClients';
-import { useDrivers } from '@/src/presentation/features/drivers/hooks/useDrivers';
+import {
+  useAllClients,
+  useClientsByIds,
+  useInfiniteClients,
+} from '@/src/presentation/features/clients/hooks/useClients';
+import { useAllDrivers, useDriversByIds } from '@/src/presentation/features/drivers/hooks/useDrivers';
 import { RemisionList } from '@/src/presentation/features/remisiones/components/RemisionList';
 import {
   useCreateRemision,
@@ -33,12 +37,14 @@ jest.mock('@/src/presentation/stores/company.store', () => ({
 }));
 
 jest.mock('@/src/presentation/features/clients/hooks/useClients', () => ({
-  useClients: jest.fn(),
   useInfiniteClients: jest.fn(),
+  useClientsByIds: jest.fn(),
+  useAllClients: jest.fn(),
 }));
 
 jest.mock('@/src/presentation/features/drivers/hooks/useDrivers', () => ({
-  useDrivers: jest.fn(),
+  useAllDrivers: jest.fn(),
+  useDriversByIds: jest.fn(),
 }));
 
 const useRemisionesMock = useRemisiones as jest.Mock;
@@ -47,8 +53,10 @@ const useUpdateRemisionMock = useUpdateRemision as jest.Mock;
 const useDeleteRemisionMock = useDeleteRemision as jest.Mock;
 const useCompanyStoreMock = useCompanyStore as unknown as jest.Mock;
 const useInfiniteClientsMock = useInfiniteClients as jest.Mock;
-const useClientsMock = useClients as jest.Mock;
-const useDriversMock = useDrivers as jest.Mock;
+const useClientsByIdsMock = useClientsByIds as jest.Mock;
+const useAllClientsMock = useAllClients as jest.Mock;
+const useDriversByIdsMock = useDriversByIds as jest.Mock;
+const useAllDriversMock = useAllDrivers as jest.Mock;
 
 const company: Company = {
   id: 'company-1',
@@ -100,16 +108,23 @@ const remision: Remision = {
   updatedAt: '2025-01-01T00:00:00Z',
 };
 
-function renderList({ items = [remision], totalPages = 1 } = {}) {
+function renderList({
+  items = [remision],
+  totalPages = 1,
+  clientsById = new Map<string, Client>([[client.id, client]]),
+  driversById = new Map<string, Driver>([[driver.id, driver]]),
+} = {}) {
   useCompanyStoreMock.mockReturnValue({ selectedCompany: company });
-  useClientsMock.mockReturnValue({ data: [client], isLoading: false });
+  useClientsByIdsMock.mockReturnValue(clientsById);
+  useAllClientsMock.mockReturnValue({ data: [...clientsById.values()], isLoading: false });
   useInfiniteClientsMock.mockReturnValue({
     data: { pages: [{ items: [client] }] },
     fetchNextPage: jest.fn(),
     hasNextPage: false,
     isFetchingNextPage: false,
   });
-  useDriversMock.mockReturnValue({ data: { items: [driver] }, isLoading: false });
+  useDriversByIdsMock.mockReturnValue(driversById);
+  useAllDriversMock.mockReturnValue({ data: [...driversById.values()], isLoading: false });
   useRemisionesMock.mockReturnValue({
     data: { items, total: items.length, limit: 10, page: 1, totalPages },
     isLoading: false,
@@ -134,8 +149,10 @@ describe('RemisionList', () => {
     useDeleteRemisionMock.mockReset();
     useCompanyStoreMock.mockReset();
     useInfiniteClientsMock.mockReset();
-    useClientsMock.mockReset();
-    useDriversMock.mockReset();
+    useClientsByIdsMock.mockReset();
+    useAllClientsMock.mockReset();
+    useDriversByIdsMock.mockReset();
+    useAllDriversMock.mockReset();
   });
 
   it('al editar envía un update que conserva type y sigue mandando retencionPercentage', async () => {
@@ -189,7 +206,7 @@ describe('RemisionList', () => {
     await userEvent.clear(unitPrice);
     await userEvent.type(unitPrice, '50');
 
-    await userEvent.click(within(dialog).getByRole('button', { name: 'Crear remisión' }));
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Crear documento' }));
 
     expect(createMutate).toHaveBeenCalledTimes(1);
     const payload = createMutate.mock.calls[0][0];
@@ -204,6 +221,40 @@ describe('RemisionList', () => {
     expect(payload.items[0]).toMatchObject({ hasIva: true, ivaPercentage: 19 });
     expect(typeof payload.items[0].hasIva).toBe('boolean');
     expect(updateMutate).not.toHaveBeenCalled();
+  });
+
+  /**
+   * El nombre se resuelve por id, no desde la primera página de clientes. El backend lista
+   * los clientes de más viejo a más nuevo, así que un cliente recién creado queda fuera de
+   * esa página y la fila mostraba '—'.
+   */
+  it('muestra el cliente de la remisión aunque no esté en la primera página de clientes', () => {
+    const nuevo: Client = { ...client, id: 'client-nuevo', name: 'Cliente Nuevo' };
+
+    renderList({
+      items: [{ ...remision, clientId: nuevo.id }],
+      clientsById: new Map([[nuevo.id, nuevo]]),
+    });
+
+    expect(useClientsByIdsMock).toHaveBeenCalledWith([nuevo.id]);
+    expect(screen.getByText('Cliente Nuevo')).toBeInTheDocument();
+  });
+
+  /**
+   * Mismo caso que el cliente: el conductor se resuelve por id, no desde la primera página.
+   * El backend lista los conductores de más viejo a más nuevo, así que un conductor recién
+   * creado queda fuera de esa página y la fila mostraba '—'.
+   */
+  it('muestra el conductor de la remisión aunque no esté en la primera página de conductores', () => {
+    const nuevo: Driver = { ...driver, id: 'driver-nuevo', name: 'Conductor Nuevo' };
+
+    renderList({
+      items: [{ ...remision, driverId: nuevo.id }],
+      driversById: new Map([[nuevo.id, nuevo]]),
+    });
+
+    expect(useDriversByIdsMock).toHaveBeenCalledWith([nuevo.id]);
+    expect(screen.getByText('Conductor Nuevo')).toBeInTheDocument();
   });
 
   it('la paginación dispara la consulta con la página nueva', async () => {
