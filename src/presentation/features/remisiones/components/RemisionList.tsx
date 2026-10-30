@@ -29,8 +29,8 @@ import { SearchInput } from '@/src/presentation/components/shared/SearchInput';
 import { Spinner } from '@/src/presentation/components/shared/Spinner';
 import { ConfirmDialog } from '@/src/presentation/components/ui/ConfirmDialog';
 import { FormModal } from '@/src/presentation/components/ui/FormModal';
-import { useClients } from '@/src/presentation/features/clients/hooks/useClients';
-import { useDrivers } from '@/src/presentation/features/drivers/hooks/useDrivers';
+import { useAllClients, useClientsByIds } from '@/src/presentation/features/clients/hooks/useClients';
+import { useAllDrivers, useDriversByIds } from '@/src/presentation/features/drivers/hooks/useDrivers';
 import { formatCurrency, formatDate } from '@/src/presentation/lib/utils';
 import { useCompanyStore } from '@/src/presentation/stores/company.store';
 import { withInferredItemIva } from '@/src/shared/utils/remisionIva';
@@ -79,11 +79,16 @@ export function RemisionList() {
   const totalPages = paginatedData?.totalPages ?? 1;
   const total = paginatedData?.total ?? 0;
 
-  const { data: clients } = useClients(selectedCompany?.id);
-  const { data: drivers } = useDrivers(selectedCompany?.id);
+  // El backend pagina de a 10 y ordena de más viejo a más nuevo, así que ni el filtro ni la
+  // tabla pueden depender de esa página: los filtros necesitan todas las entidades y la
+  // tabla resuelve cada nombre por id.
+  const { data: allClients } = useAllClients(selectedCompany?.id);
+  const clientsById = useClientsByIds(remisiones.map((remision) => remision.clientId));
+  const { data: allDrivers } = useAllDrivers(selectedCompany?.id);
+  const driversById = useDriversByIds(remisiones.map((remision) => remision.driverId));
 
-  const clientsList = clients?.items ?? [];
-  const driversList = drivers?.items ?? [];
+  const clientsList = allClients ?? [];
+  const driversList = allDrivers ?? [];
 
   const createMutation = useCreateRemision();
   const updateMutation = useUpdateRemision();
@@ -148,9 +153,6 @@ export function RemisionList() {
 
   // Filter function for Autocomplete.Filter
   const { contains } = useFilter({ sensitivity: 'base' });
-
-  const clientsById = new Map((clients?.items ?? []).map((c) => [c.id, c]));
-  const driversById = new Map((drivers?.items ?? []).map((d) => [d.id, d]));
 
   if (!selectedCompany) {
     return (
@@ -534,7 +536,7 @@ export function RemisionList() {
                 }
               : { companyId: selectedCompany.id }
           }
-          submitLabel={editingRemision ? 'Guardar cambios' : 'Crear remisión'}
+          submitLabel={editingRemision ? 'Guardar cambios' : 'Crear documento'}
           isSubmitting={createMutation.isPending || updateMutation.isPending}
           submitError={createMutation.error || updateMutation.error}
           onSubmit={handleSubmit}
